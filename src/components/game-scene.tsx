@@ -1,111 +1,105 @@
 "use client";
 
-import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
-import { AdaptiveDpr, ContactShadows, Float, Sparkles } from "@react-three/drei";
+import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
+import { AdaptiveDpr, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 
 type GameSceneProps = { progressRef: MutableRefObject<number> };
 
-const terrainHeight = (x: number, z: number) =>
-  Math.sin(x * 0.18) * 0.42 + Math.cos(z * 0.11) * 0.65 + Math.sin((x - z) * 0.07) * 0.55;
+function seeded(index: number) {
+  return (Math.sin(index * 999.91) * 43758.5453) % 1;
+}
 
-function Terrain() {
-  const geometry = useMemo(() => {
-    const result = new THREE.PlaneGeometry(54, 78, 96, 128);
-    const positions = result.attributes.position;
-    for (let index = 0; index < positions.count; index += 1) {
-      const x = positions.getX(index);
-      const z = positions.getY(index);
-      positions.setZ(index, terrainHeight(x, z));
+function StarTunnel({ progressRef }: GameSceneProps) {
+  const points = useRef<THREE.Points>(null);
+  const positions = useMemo(() => {
+    const values = new Float32Array(1200 * 3);
+    for (let index = 0; index < 1200; index += 1) {
+      const radius = 2.5 + Math.abs(seeded(index)) * 27;
+      const angle = seeded(index + 1000) * Math.PI * 2;
+      values[index * 3] = Math.cos(angle) * radius;
+      values[index * 3 + 1] = Math.sin(angle) * radius * 0.62;
+      values[index * 3 + 2] = -Math.abs(seeded(index + 2000)) * 120 + 18;
     }
-    result.computeVertexNormals();
-    result.rotateX(-Math.PI / 2);
-    return result;
+    return values;
   }, []);
 
-  return <mesh geometry={geometry} position={[0, 0, -15]} receiveShadow>
-    <meshStandardMaterial color="#443338" roughness={0.93} metalness={0.06} flatShading />
-  </mesh>;
+  useFrame((_, delta) => {
+    if (!points.current) return;
+    const attribute = points.current.geometry.attributes.position;
+    const velocity = 9 + progressRef.current * 34;
+    for (let index = 0; index < attribute.count; index += 1) {
+      const z = attribute.getZ(index) + delta * velocity;
+      attribute.setZ(index, z > 20 ? z - 140 : z);
+    }
+    attribute.needsUpdate = true;
+  });
+
+  return <points ref={points}><bufferGeometry><bufferAttribute attach="attributes-position" args={[positions, 3]} /></bufferGeometry><pointsMaterial color="#bceef6" size={0.07} sizeAttenuation transparent opacity={0.82} depthWrite={false} /></points>;
 }
 
-function Explorer({ progressRef }: GameSceneProps) {
-  const group = useRef<THREE.Group>(null);
+function Planet({ progressRef }: GameSceneProps) {
+  const planet = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
-    if (!group.current) return;
+    if (!planet.current) return;
     const progress = progressRef.current;
-    const z = THREE.MathUtils.lerp(8, -24, progress);
-    group.current.position.set(THREE.MathUtils.lerp(-1.85, 0, progress), terrainHeight(0, z + 15), z);
-    group.current.rotation.y = THREE.MathUtils.lerp(-0.08, 0, progress);
-    group.current.children.forEach((child, index) => {
-      if (index > 3) child.rotation.x = Math.sin(clock.elapsedTime * 7 + index * Math.PI) * 0.45;
-    });
+    planet.current.position.z = THREE.MathUtils.lerp(-58, -14, progress);
+    planet.current.position.x = THREE.MathUtils.lerp(4.8, 0.8, progress);
+    planet.current.position.y = THREE.MathUtils.lerp(-3.6, -1.6, progress);
+    planet.current.scale.setScalar(THREE.MathUtils.lerp(0.65, 2.5, progress));
+    planet.current.rotation.y = clock.elapsedTime * 0.024;
   });
-  return <group ref={group}><mesh castShadow position={[0, 1.05, 0]}><capsuleGeometry args={[0.32, 0.9, 8, 24]} /><meshStandardMaterial color="#d8e2df" roughness={0.42} metalness={0.48} /></mesh><mesh castShadow position={[0, 1.78, 0]}><sphereGeometry args={[0.46, 32, 24]} /><meshPhysicalMaterial color="#173c4d" roughness={0.12} metalness={0.92} clearcoat={1} /></mesh><mesh castShadow position={[0, 1.08, -0.35]}><boxGeometry args={[0.62, 0.68, 0.26]} /><meshStandardMaterial color="#234f63" roughness={0.3} metalness={0.72} /></mesh>{[-1, 1].map((side) => <group key={side}><mesh castShadow position={[side * 0.48, 1.12, 0]} rotation={[0, 0, side * 0.18]}><capsuleGeometry args={[0.1, 0.52, 6, 12]} /><meshStandardMaterial color="#d8e2df" roughness={0.42} metalness={0.48} /></mesh><mesh castShadow position={[side * 0.19, 0.4, 0]}><capsuleGeometry args={[0.13, 0.62, 6, 12]} /><meshStandardMaterial color="#d8e2df" roughness={0.42} metalness={0.48} /></mesh></group>)}<pointLight color="#5deaf1" intensity={1.4} distance={2.4} position={[0, 1.4, 0.45]} /></group>;
+
+  return <group ref={planet}>
+    <mesh><sphereGeometry args={[8, 96, 64]} /><meshStandardMaterial color="#263d68" emissive="#07172d" emissiveIntensity={0.9} roughness={0.76} metalness={0.08} /></mesh>
+    <mesh scale={1.018}><sphereGeometry args={[8, 96, 64]} /><meshBasicMaterial color="#74d8ef" transparent opacity={0.11} side={THREE.BackSide} blending={THREE.AdditiveBlending} /></mesh>
+    <mesh scale={1.09}><sphereGeometry args={[8, 96, 64]} /><meshBasicMaterial color="#3e9fda" transparent opacity={0.09} side={THREE.BackSide} blending={THREE.AdditiveBlending} /></mesh>
+    <pointLight color="#7eeaf3" intensity={18} distance={48} decay={2} position={[-6, 4, 3]} />
+  </group>;
 }
 
-function Beacon({ index, position, progressRef }: { index: number; position: [number, number, number]; progressRef: MutableRefObject<number> }) {
-  const light = useRef<THREE.PointLight>(null);
-  const crystal = useRef<THREE.Group>(null);
+function FlightCraft({ progressRef }: GameSceneProps) {
+  const craft = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
-    const active = THREE.MathUtils.smoothstep(progressRef.current, 0.16 + index * 0.12, 0.29 + index * 0.12);
-    if (light.current) light.current.intensity = active * 10;
-    if (crystal.current) crystal.current.rotation.y = clock.elapsedTime * 0.24;
+    if (!craft.current) return;
+    craft.current.position.x = Math.sin(clock.elapsedTime * 0.45) * 0.12;
+    craft.current.position.y = -1.55 + Math.cos(clock.elapsedTime * 0.36) * 0.06;
+    craft.current.rotation.z = Math.sin(clock.elapsedTime * 0.45) * 0.035;
+    craft.current.position.z = THREE.MathUtils.lerp(3, -1, progressRef.current);
   });
-  return <group position={position} ref={crystal}>
-    <Float speed={1.2} rotationIntensity={0.2} floatIntensity={0.55}><mesh castShadow><octahedronGeometry args={[0.56, 1]} /><meshPhysicalMaterial color="#4ad3e2" emissive="#067d91" emissiveIntensity={1.4} roughness={0.18} metalness={0.58} transmission={0.12} /></mesh></Float>
-    <pointLight ref={light} color="#62e5ef" intensity={0} distance={7} decay={2} />
+  return <group ref={craft} rotation={[0.12, Math.PI, 0]}>
+    <mesh castShadow><coneGeometry args={[0.34, 2.3, 4]} /><meshStandardMaterial color="#2c4d68" roughness={0.27} metalness={0.9} /></mesh>
+    <mesh position={[0, 0.18, 0.6]} rotation={[0, Math.PI / 4, 0]}><octahedronGeometry args={[0.33, 2]} /><meshPhysicalMaterial color="#0e2b45" roughness={0.07} metalness={0.95} clearcoat={1} /></mesh>
+    <pointLight color="#5deaf1" intensity={6} distance={10} decay={2} position={[0, -0.2, -1.15]} />
   </group>;
 }
 
-function Base({ progressRef }: GameSceneProps) {
-  const base = useRef<THREE.Group>(null);
-  const doorLight = useRef<THREE.PointLight>(null);
-  useFrame(() => {
-    const arrival = THREE.MathUtils.smoothstep(progressRef.current, 0.64, 0.98);
-    if (base.current) base.current.scale.setScalar(THREE.MathUtils.lerp(0.48, 1, arrival));
-    if (doorLight.current) doorLight.current.intensity = arrival * 14;
-  });
-  return <group ref={base} position={[0, terrainHeight(0, -15), -30]}>
-    <mesh castShadow receiveShadow rotation={[Math.PI / 2, 0, 0]}><sphereGeometry args={[3.1, 48, 28, 0, Math.PI * 2, 0, Math.PI / 2]} /><meshPhysicalMaterial color="#304d5d" roughness={0.27} metalness={0.8} clearcoat={0.8} /></mesh>
-    <mesh castShadow position={[0, 0.9, 2.92]} rotation={[0, 0, Math.PI / 2]}><cylinderGeometry args={[0.72, 0.72, 1.75, 32, 1, false, 0, Math.PI]} /><meshStandardMaterial color="#192d3a" emissive="#ff9c4a" emissiveIntensity={2.5} roughness={0.3} metalness={0.75} /></mesh>
-    <mesh position={[0, 0.08, 0]} rotation={[-Math.PI / 2, 0, 0]}><torusGeometry args={[3.12, 0.08, 12, 64]} /><meshStandardMaterial color="#6ae5eb" emissive="#0c8594" emissiveIntensity={1.8} metalness={0.8} /></mesh>
-    <pointLight ref={doorLight} color="#ffae5c" intensity={0} distance={14} decay={2} position={[0, 1.4, 2.5]} />
-  </group>;
-}
-
-function CameraRail({ progressRef }: GameSceneProps) {
+function CameraFlight({ progressRef }: GameSceneProps) {
   const { camera } = useThree();
   const target = useMemo(() => new THREE.Vector3(), []);
-  useFrame(() => {
+  useFrame(({ clock }) => {
     const progress = progressRef.current;
-    const x = THREE.MathUtils.lerp(7.8, 2.8, progress);
-    const y = THREE.MathUtils.lerp(4.6, 2.85, progress);
-    const z = THREE.MathUtils.lerp(15, -16.5, progress);
-    camera.position.lerp(new THREE.Vector3(x, y, z), 0.08);
-    target.set(THREE.MathUtils.lerp(-1.8, 0, progress), 1.25, THREE.MathUtils.lerp(3.5, -25.5, progress));
+    camera.position.lerp(new THREE.Vector3(0, 0.35 + Math.sin(clock.elapsedTime * 0.22) * 0.08, THREE.MathUtils.lerp(16, 2, progress)), 0.055);
+    target.set(THREE.MathUtils.lerp(1.6, 0.6, progress), THREE.MathUtils.lerp(-0.5, -1.1, progress), THREE.MathUtils.lerp(-24, -15, progress));
     camera.lookAt(target);
   });
   return null;
 }
 
-function Expedition({ progressRef }: GameSceneProps) {
+function Flight({ progressRef }: GameSceneProps) {
   return <>
-    <color attach="background" args={["#060d16"]} />
-    <fog attach="fog" args={["#060d16", 14, 64]} />
-    <ambientLight intensity={0.15} />
-    <hemisphereLight args={["#93d7ed", "#351e22", 1.5]} />
-    <directionalLight castShadow color="#d9efff" intensity={3.4} position={[8, 12, 7]} shadow-mapSize={[2048, 2048]} />
-    <pointLight color="#4ee5eb" intensity={9} distance={15} position={[-5, 4, 2]} />
-    <Sparkles count={95} scale={[34, 12, 52]} size={1.8} speed={0.18} color="#aee8ed" position={[0, 5, -15]} />
-    <Terrain />
-    <Explorer progressRef={progressRef} />
-    {[5, -3, -11, -18].map((z, index) => <Beacon key={z} index={index} progressRef={progressRef} position={[index % 2 ? 2.7 : -2.7, terrainHeight(index % 2 ? 2.7 : -2.7, z + 15) + 0.75, z]} />)}
-    <Base progressRef={progressRef} />
-    <ContactShadows position={[0, -0.55, -13]} opacity={0.46} scale={45} blur={2.8} far={25} />
-    <CameraRail progressRef={progressRef} />
-    <EffectComposer multisampling={0}><SSAO samples={21} radius={0.42} intensity={18} luminanceInfluence={0.55} /><Bloom luminanceThreshold={1.2} mipmapBlur intensity={0.75} radius={0.45} /><Vignette offset={0.16} darkness={0.82} /></EffectComposer>
+    <color attach="background" args={["#020711"]} />
+    <fog attach="fog" args={["#020711", 24, 96]} />
+    <ambientLight intensity={0.08} />
+    <directionalLight color="#9ddff2" intensity={1.8} position={[-8, 5, 8]} />
+    <StarTunnel progressRef={progressRef} />
+    <Planet progressRef={progressRef} />
+    <FlightCraft progressRef={progressRef} />
+    <Sparkles count={120} scale={[34, 18, 82]} size={1.4} speed={0.13} color="#78ddec" position={[0, 0, -25]} />
+    <CameraFlight progressRef={progressRef} />
+    <EffectComposer multisampling={0}><Bloom luminanceThreshold={0.65} mipmapBlur intensity={1.05} radius={0.62} /><Vignette offset={0.12} darkness={0.92} /></EffectComposer>
   </>;
 }
 
@@ -118,5 +112,6 @@ export default function GameScene({ progressRef }: GameSceneProps) {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
-  return <div className="game-scene" aria-hidden="true">{enabled && <Canvas shadows dpr={[1, 1.75]} camera={{ fov: 42, position: [7.8, 4.6, 15] }} gl={{ antialias: false, powerPreference: "high-performance" }}><AdaptiveDpr pixelated /><Expedition progressRef={progressRef} /></Canvas>}</div>;
+
+  return <div className="game-scene" aria-hidden="true">{enabled && <Canvas dpr={[1, 1.75]} camera={{ fov: 48, position: [0, 0.35, 16] }} gl={{ antialias: false, powerPreference: "high-performance" }}><AdaptiveDpr pixelated /><Flight progressRef={progressRef} /></Canvas>}</div>;
 }

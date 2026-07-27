@@ -48,7 +48,7 @@ function Planet({ progressRef }: GameSceneProps) {
     planet.current.position.z = THREE.MathUtils.lerp(-58, -14, progress);
     planet.current.position.x = THREE.MathUtils.lerp(4.8, 0.8, progress);
     planet.current.position.y = THREE.MathUtils.lerp(-3.6, -1.6, progress);
-    planet.current.scale.setScalar(THREE.MathUtils.lerp(0.65, 2.5, progress));
+    planet.current.scale.setScalar(THREE.MathUtils.lerp(0.65, 1.8, progress));
     planet.current.rotation.y = clock.elapsedTime * 0.024;
   });
 
@@ -62,12 +62,15 @@ function Planet({ progressRef }: GameSceneProps) {
 
 function FlightCraft({ progressRef }: GameSceneProps) {
   const craft = useRef<THREE.Group>(null);
+  const engine = useRef<THREE.PointLight>(null);
   useFrame(({ clock }) => {
     if (!craft.current) return;
-    craft.current.position.x = 3.9 + Math.sin(clock.elapsedTime * 0.45) * 0.12;
-    craft.current.position.y = -1.3 + Math.cos(clock.elapsedTime * 0.36) * 0.06;
-    craft.current.rotation.z = -0.18 + Math.sin(clock.elapsedTime * 0.45) * 0.035;
-    craft.current.position.z = THREE.MathUtils.lerp(3, -1, progressRef.current);
+    const arrival = THREE.MathUtils.smoothstep(progressRef.current, 0.72, 0.94);
+    craft.current.position.x = THREE.MathUtils.lerp(3.9, 0, arrival) + Math.sin(clock.elapsedTime * 0.45) * 0.12;
+    craft.current.position.y = THREE.MathUtils.lerp(-1.3, -0.3, arrival) + Math.cos(clock.elapsedTime * 0.36) * 0.06;
+    craft.current.rotation.z = THREE.MathUtils.lerp(-0.18, 0, arrival) + Math.sin(clock.elapsedTime * 0.45) * 0.035;
+    craft.current.position.z = THREE.MathUtils.lerp(3, -0.3, progressRef.current);
+    if (engine.current) engine.current.intensity = 4 + Math.sin(clock.elapsedTime * 7) * 2 + arrival * 8;
   });
   return <group ref={craft} rotation={[0.08, Math.PI, 0]}>
     <mesh castShadow rotation={[Math.PI / 2, 0, 0]}><capsuleGeometry args={[0.26, 1.9, 8, 24]} /><meshStandardMaterial color="#1d3e59" roughness={0.2} metalness={0.94} /></mesh>
@@ -75,7 +78,9 @@ function FlightCraft({ progressRef }: GameSceneProps) {
     <mesh castShadow position={[-0.67, -0.06, -0.08]} rotation={[0.04, 0.18, -0.1]}><boxGeometry args={[1.26, 0.06, 0.42]} /><meshStandardMaterial color="#294d68" roughness={0.28} metalness={0.88} /></mesh>
     <mesh castShadow position={[0.67, -0.06, -0.08]} rotation={[0.04, -0.18, 0.1]}><boxGeometry args={[1.26, 0.06, 0.42]} /><meshStandardMaterial color="#294d68" roughness={0.28} metalness={0.88} /></mesh>
     <mesh position={[0, -0.02, -1.22]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.18, 0.25, 0.38, 20]} /><meshStandardMaterial color="#24455d" emissive="#167e98" emissiveIntensity={2.4} metalness={0.85} /></mesh>
-    <pointLight color="#5deaf1" intensity={8} distance={12} decay={2} position={[0, -0.02, -1.48]} />
+    <pointLight ref={engine} color="#5deaf1" intensity={4} distance={12} decay={2} position={[0, -0.02, -1.48]} />
+    <pointLight color="#ffb45d" intensity={3} distance={5} decay={2} position={[-0.7, 0, 0.2]} />
+    <pointLight color="#ffb45d" intensity={3} distance={5} decay={2} position={[0.7, 0, 0.2]} />
   </group>;
 }
 

@@ -53,12 +53,21 @@ for (const file of files) {
   let source = readFileSync(path, "utf8");
 
   if (!source.includes("function createThreeTimerClock")) {
-    source = source.replace("const createStore = (invalidate, advance) => {", `${helper}\nconst createStore = (invalidate, advance) => {`);
+    source = source.replace(
+      "const createStore = (invalidate, advance) => {",
+      `${helper}\nconst createStore = (invalidate, advance) => {`,
+    );
   }
 
   source = source
-    .replaceAll("clock: new THREE.Clock(),", "clock: createThreeTimerClock(THREE),")
-    .replaceAll("clock: new THREE__namespace.Clock(),", "clock: createThreeTimerClock(THREE__namespace),");
+    .replaceAll(
+      "clock: new THREE.Clock(),",
+      "clock: createThreeTimerClock(THREE),",
+    )
+    .replaceAll(
+      "clock: new THREE__namespace.Clock(),",
+      "clock: createThreeTimerClock(THREE__namespace),",
+    );
 
   writeFileSync(path, source);
 }

@@ -1,6 +1,6 @@
 # Enrique Martinez Portfolio
 
-An animated software portfolio built with Next.js, TypeScript, Tailwind CSS, GSAP, and Lenis.
+A personal website for Enrique Martinez, a professional software engineer. It presents full-stack experience, technical skills, and contact paths through a scroll-driven spaceflight scene built with Next.js, TypeScript, Three.js, GSAP, and Lenis.
 
 ## Local development
 

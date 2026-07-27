@@ -1,42 +1,22 @@
 import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
-import { Inter } from "next/font/google";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
+const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const geistMono = Geist_Mono({ subsets: ["latin"], variable: "--font-geist-mono" });
 
 export const metadata: Metadata = {
-  title: "Developer Portfolio",
-  description: "Professional portfolio for a full-stack software developer",
+  title: "Enrique Martinez | Full-stack developer",
+  description: "A scroll journey through Enrique Martinez's software work.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
-        <script
-          defer
-          src="https://cloud.umami.is/script.js"
-          data-website-id="aedd3fdc-c7cd-4840-87f0-b89c1fed95ea"
-        ></script>
+        <script defer src="https://cloud.umami.is/script.js" data-website-id="aedd3fdc-c7cd-4840-87f0-b89c1fed95ea" />
       </head>
-      <body className={`${inter.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <div className="container mx-auto px-4 md:px-6">{children}</div>
-        </ThemeProvider>
-      </body>
+      <body className={`${geist.variable} ${geistMono.variable}`}>{children}</body>
     </html>
   );
 }

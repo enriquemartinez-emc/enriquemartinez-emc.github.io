@@ -38,7 +38,6 @@ export default function SpacePortfolio() {
     gsap.ticker.lagSmoothing(0);
     const timeline = gsap.timeline({ scrollTrigger: { trigger: ".journey", start: "top top", end: "+=5600", scrub: 1, pin: ".journey-canvas", anticipatePin: 1 } });
     timeline
-      .to(".scene-fallback", { autoAlpha: 0.45, duration: 0.8 }, 0.5)
       .to(".planet", { scale: 1.35, x: "-10vw", duration: 2.8, ease: "none" }, 0.8)
       .to(".skill-signal", { autoAlpha: 1, stagger: 0.22, duration: 0.3 }, 1.1)
       .to(".terminal-screen", { autoAlpha: 1, y: 0, duration: 0.5 }, 3.85);

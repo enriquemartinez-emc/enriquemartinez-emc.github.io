@@ -53,9 +53,7 @@ function Planet({ progressRef }: GameSceneProps) {
   });
 
   return <group ref={planet}>
-    <mesh><sphereGeometry args={[8, 96, 64]} /><meshStandardMaterial color="#426b99" emissive="#102a4b" emissiveIntensity={1.15} roughness={0.7} metalness={0.04} /></mesh>
-    <mesh scale={1.018}><sphereGeometry args={[8, 96, 64]} /><meshBasicMaterial color="#74d8ef" transparent opacity={0.11} side={THREE.BackSide} blending={THREE.AdditiveBlending} /></mesh>
-    <mesh scale={1.09}><sphereGeometry args={[8, 96, 64]} /><meshBasicMaterial color="#3e9fda" transparent opacity={0.09} side={THREE.BackSide} blending={THREE.AdditiveBlending} /></mesh>
+    <mesh><sphereGeometry args={[8, 96, 64]} /><meshStandardMaterial color="#4c78aa" emissive="#183d68" emissiveIntensity={1.4} roughness={0.62} metalness={0.02} /></mesh>
     <pointLight color="#7eeaf3" intensity={18} distance={48} decay={2} position={[-6, 4, 3]} />
   </group>;
 }

@@ -38,9 +38,7 @@ export default function SpacePortfolio() {
     gsap.ticker.lagSmoothing(0);
     const timeline = gsap.timeline({ scrollTrigger: { trigger: ".journey", start: "top top", end: "+=5600", scrub: 1, pin: ".journey-canvas", anticipatePin: 1 } });
     timeline
-      .to(".planet", { scale: 1.35, x: "-10vw", duration: 2.8, ease: "none" }, 0.8)
       .to(".skill-signal", { autoAlpha: 1, stagger: 0.22, duration: 0.3 }, 1.1)
-      .to(".terminal-screen", { autoAlpha: 1, y: 0, duration: 0.5 }, 3.85);
     timeline.eventCallback("onUpdate", () => {
       sceneProgress.current = timeline.progress();
     });
@@ -50,7 +48,7 @@ export default function SpacePortfolio() {
   return <main className="space-site" ref={root}>
     <header className="site-nav"><Link href="#launch" className="wordmark"><span>EM</span>{" // expedition"}</Link><nav className="nav-links" aria-label="Portfolio navigation"><Link href="#about">About</Link><a href="https://github.com/enriquemartinez-emc" target="_blank" rel="noreferrer">GitHub</a><a className="nav-signal" href="mailto:enrique.martinez.swe@outlook.com">Send signal</a></nav></header>
     <section className="journey" aria-label="Enrique's software expedition">
-      <div className="journey-canvas"><GameScene progressRef={sceneProgress} /><div className="scene-fallback" aria-hidden="true"><div className="star-field" /><div className="moon" /><div className="planet" /><div className="terminal-screen">$ planetfall --status=locked<p>{joke}</p></div></div><div className="skill-signals" aria-hidden="true"><span className="skill-signal signal-frontend">Frontend</span><span className="skill-signal signal-backend">Backend</span><span className="skill-signal signal-data">Data</span><span className="skill-signal signal-systems">Systems</span></div></div>
+      <div className="journey-canvas"><GameScene progressRef={sceneProgress} /><div className="skill-signals" aria-hidden="true"><span className="skill-signal signal-frontend">Frontend</span><span className="skill-signal signal-backend">Backend</span><span className="skill-signal signal-data">Data</span><span className="skill-signal signal-systems">Systems</span></div></div>
       <div className="journey-content">
         <section id="launch" className="story-beat landing"><div><p className="eyebrow">01 / Landing sequence complete</p><h1>Enrique<br /><span>Martinez</span></h1><p>Full-stack developer building useful, durable software from first signal to production.</p><a className="story-link" href="#about">Begin the walk ↓</a></div></section>
         <section id="about" className="story-beat right"><div><p className="eyebrow">02 / The walk begins</p><h2>Make the complex feel navigable.</h2><p>I build thoughtful web applications across frontend and backend systems. The work is equal parts clear architecture, practical delivery, and an interface people want to use.</p></div></section>

@@ -1,14 +1,12 @@
 "use client";
 
 import { Bloom, EffectComposer, SSAO, Vignette } from "@react-three/postprocessing";
-import { AdaptiveDpr, ContactShadows, Environment, Float, Sparkles, useAnimations, useGLTF } from "@react-three/drei";
+import { AdaptiveDpr, ContactShadows, Float, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 
 type GameSceneProps = { progressRef: MutableRefObject<number> };
-
-const explorerAsset = "https://threejs.org/examples/models/gltf/Xbot.glb";
 
 const terrainHeight = (x: number, z: number) =>
   Math.sin(x * 0.18) * 0.42 + Math.cos(z * 0.11) * 0.65 + Math.sin((x - z) * 0.07) * 0.55;
@@ -33,43 +31,18 @@ function Terrain() {
 }
 
 function Explorer({ progressRef }: GameSceneProps) {
-  const explorer = useRef<THREE.Group>(null);
-  const { scene, animations } = useGLTF(explorerAsset);
-  const model = useMemo(() => scene.clone(true), [scene]);
-  const { actions } = useAnimations(animations, explorer);
-
-  useEffect(() => {
-    const preferred = actions.Walking ?? actions.walk ?? Object.values(actions)[0];
-    preferred?.reset().fadeIn(0.35).play();
-    return () => {
-      preferred?.fadeOut(0.2);
-    };
-  }, [actions]);
-
-  useFrame(({ clock }) => {
-    if (!explorer.current) return;
-    const progress = progressRef.current;
-    const z = THREE.MathUtils.lerp(8, -24, progress);
-    const x = THREE.MathUtils.lerp(-1.85, 0, progress);
-    explorer.current.position.set(x, terrainHeight(x, z + 15) + 0.02, z);
-    explorer.current.rotation.y = THREE.MathUtils.lerp(-0.08, 0, progress);
-    explorer.current.position.y += Math.sin(clock.elapsedTime * 7) * 0.018;
-  });
-
-  return <group ref={explorer} scale={0.74} castShadow>
-    <primitive object={model} rotation={[0, Math.PI, 0]} />
-    <pointLight color="#5deaf1" intensity={1.4} distance={2.4} position={[0, 1.4, 0.45]} />
-  </group>;
-}
-
-function ExplorerFallback({ progressRef }: GameSceneProps) {
   const group = useRef<THREE.Group>(null);
-  useFrame(() => {
+  useFrame(({ clock }) => {
     if (!group.current) return;
     const progress = progressRef.current;
-    group.current.position.z = THREE.MathUtils.lerp(8, -24, progress);
+    const z = THREE.MathUtils.lerp(8, -24, progress);
+    group.current.position.set(THREE.MathUtils.lerp(-1.85, 0, progress), terrainHeight(0, z + 15), z);
+    group.current.rotation.y = THREE.MathUtils.lerp(-0.08, 0, progress);
+    group.current.children.forEach((child, index) => {
+      if (index > 3) child.rotation.x = Math.sin(clock.elapsedTime * 7 + index * Math.PI) * 0.45;
+    });
   });
-  return <group ref={group}><mesh castShadow position={[0, 1.05, 0]}><capsuleGeometry args={[0.28, 0.86, 6, 16]} /><meshStandardMaterial color="#d8e2df" roughness={0.48} metalness={0.35} /></mesh><mesh castShadow position={[0, 1.74, 0]}><sphereGeometry args={[0.42, 24, 20]} /><meshPhysicalMaterial color="#173c4d" roughness={0.16} metalness={0.9} clearcoat={1} /></mesh></group>;
+  return <group ref={group}><mesh castShadow position={[0, 1.05, 0]}><capsuleGeometry args={[0.32, 0.9, 8, 24]} /><meshStandardMaterial color="#d8e2df" roughness={0.42} metalness={0.48} /></mesh><mesh castShadow position={[0, 1.78, 0]}><sphereGeometry args={[0.46, 32, 24]} /><meshPhysicalMaterial color="#173c4d" roughness={0.12} metalness={0.92} clearcoat={1} /></mesh><mesh castShadow position={[0, 1.08, -0.35]}><boxGeometry args={[0.62, 0.68, 0.26]} /><meshStandardMaterial color="#234f63" roughness={0.3} metalness={0.72} /></mesh>{[-1, 1].map((side) => <group key={side}><mesh castShadow position={[side * 0.48, 1.12, 0]} rotation={[0, 0, side * 0.18]}><capsuleGeometry args={[0.1, 0.52, 6, 12]} /><meshStandardMaterial color="#d8e2df" roughness={0.42} metalness={0.48} /></mesh><mesh castShadow position={[side * 0.19, 0.4, 0]}><capsuleGeometry args={[0.13, 0.62, 6, 12]} /><meshStandardMaterial color="#d8e2df" roughness={0.42} metalness={0.48} /></mesh></group>)}<pointLight color="#5deaf1" intensity={1.4} distance={2.4} position={[0, 1.4, 0.45]} /></group>;
 }
 
 function Beacon({ index, position, progressRef }: { index: number; position: [number, number, number]; progressRef: MutableRefObject<number> }) {
@@ -125,10 +98,9 @@ function Expedition({ progressRef }: GameSceneProps) {
     <hemisphereLight args={["#93d7ed", "#351e22", 1.5]} />
     <directionalLight castShadow color="#d9efff" intensity={3.4} position={[8, 12, 7]} shadow-mapSize={[2048, 2048]} />
     <pointLight color="#4ee5eb" intensity={9} distance={15} position={[-5, 4, 2]} />
-    <Environment preset="night" />
     <Sparkles count={95} scale={[34, 12, 52]} size={1.8} speed={0.18} color="#aee8ed" position={[0, 5, -15]} />
     <Terrain />
-    <Suspense fallback={<ExplorerFallback progressRef={progressRef} />}><Explorer progressRef={progressRef} /></Suspense>
+    <Explorer progressRef={progressRef} />
     {[5, -3, -11, -18].map((z, index) => <Beacon key={z} index={index} progressRef={progressRef} position={[index % 2 ? 2.7 : -2.7, terrainHeight(index % 2 ? 2.7 : -2.7, z + 15) + 0.75, z]} />)}
     <Base progressRef={progressRef} />
     <ContactShadows position={[0, -0.55, -13]} opacity={0.46} scale={45} blur={2.8} far={25} />

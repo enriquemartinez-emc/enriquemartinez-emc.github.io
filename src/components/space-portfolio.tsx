@@ -6,6 +6,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import GameScene from "@/components/game-scene";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -14,6 +15,7 @@ const skillGroups = [["FRONTEND", "React / Next.js / Vue / Angular"], ["BACKEND"
 
 export default function SpacePortfolio() {
   const root = useRef<HTMLElement>(null);
+  const sceneProgress = useRef(0);
   const [jokeIndex, setJokeIndex] = useState(0);
   const joke = jokes[jokeIndex];
 
@@ -47,13 +49,16 @@ export default function SpacePortfolio() {
       .to(".base", { autoAlpha: 1, scale: 1, duration: 1.15, ease: "none" }, 2.75)
       .to(".astronaut", { x: "69vw", backgroundPosition: "100% 0%", duration: 1, ease: "none" }, 3.1)
       .to(".terminal-screen", { autoAlpha: 1, y: 0, duration: 0.5 }, 3.85);
+    timeline.eventCallback("onUpdate", () => {
+      sceneProgress.current = timeline.progress();
+    });
     return () => { lenis.destroy(); lenis.off("scroll", ScrollTrigger.update); gsap.ticker.remove(update); };
   }, { scope: root });
 
   return <main className="space-site" ref={root}>
     <header className="site-nav"><Link href="#launch" className="wordmark"><span>EM</span>{" // expedition"}</Link><nav className="nav-links" aria-label="Portfolio navigation"><Link href="#about">About</Link><a href="https://github.com/enriquemartinez-emc" target="_blank" rel="noreferrer">GitHub</a><a className="nav-signal" href="mailto:enrique.martinez.swe@outlook.com">Send signal</a></nav></header>
     <section className="journey" aria-label="Enrique's software expedition">
-      <div className="journey-canvas" aria-hidden="true"><div className="star-field" /><div className="moon" /><div className="distant-ridge" /><div className="planet" /><div className="path" /><div className="pod" /><div className="astronaut" />{skillGroups.map(([label], index) => <div className={`marker marker-${index}`} key={label}>{label}</div>)}<div className="beacon" /><div className="base" /><div className="terminal-screen">$ final-production --status=ready<p>{joke}</p></div></div>
+      <div className="journey-canvas"><GameScene progressRef={sceneProgress} /><div className="scene-fallback" aria-hidden="true"><div className="star-field" /><div className="moon" /><div className="distant-ridge" /><div className="planet" /><div className="path" /><div className="pod" /><div className="astronaut" />{skillGroups.map(([label], index) => <div className={`marker marker-${index}`} key={label}>{label}</div>)}<div className="beacon" /><div className="base" /><div className="terminal-screen">$ final-production --status=ready<p>{joke}</p></div></div></div>
       <div className="journey-content">
         <section id="launch" className="story-beat landing"><div><p className="eyebrow">01 / Landing sequence complete</p><h1>Enrique<br /><span>Martinez</span></h1><p>Full-stack developer building useful, durable software from first signal to production.</p><a className="story-link" href="#about">Begin the walk ↓</a></div></section>
         <section id="about" className="story-beat right"><div><p className="eyebrow">02 / The walk begins</p><h2>Make the complex feel navigable.</h2><p>I build thoughtful web applications across frontend and backend systems. The work is equal parts clear architecture, practical delivery, and an interface people want to use.</p></div></section>

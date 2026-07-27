@@ -42,14 +42,15 @@ function StarTunnel({ progressRef }: GameSceneProps) {
 
 function Planet({ progressRef }: GameSceneProps) {
   const planet = useRef<THREE.Group>(null);
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!planet.current) return;
+    const elapsed = performance.now() / 1000;
     const progress = progressRef.current;
     planet.current.position.z = THREE.MathUtils.lerp(-58, -14, progress);
     planet.current.position.x = THREE.MathUtils.lerp(4.8, 0.8, progress);
     planet.current.position.y = THREE.MathUtils.lerp(-3.6, -1.6, progress);
     planet.current.scale.setScalar(THREE.MathUtils.lerp(0.65, 1.8, progress));
-    planet.current.rotation.y = clock.elapsedTime * 0.024;
+    planet.current.rotation.y = elapsed * 0.024;
   });
 
   return <group ref={planet}>
@@ -61,14 +62,15 @@ function Planet({ progressRef }: GameSceneProps) {
 function FlightCraft({ progressRef }: GameSceneProps) {
   const craft = useRef<THREE.Group>(null);
   const engine = useRef<THREE.PointLight>(null);
-  useFrame(({ clock }) => {
+  useFrame(() => {
     if (!craft.current) return;
+    const elapsed = performance.now() / 1000;
     const arrival = THREE.MathUtils.smoothstep(progressRef.current, 0.72, 0.94);
-    craft.current.position.x = THREE.MathUtils.lerp(3.9, 0, arrival) + Math.sin(clock.elapsedTime * 0.45) * 0.12;
-    craft.current.position.y = THREE.MathUtils.lerp(-1.3, -0.3, arrival) + Math.cos(clock.elapsedTime * 0.36) * 0.06;
-    craft.current.rotation.z = THREE.MathUtils.lerp(-0.18, 0, arrival) + Math.sin(clock.elapsedTime * 0.45) * 0.035;
+    craft.current.position.x = THREE.MathUtils.lerp(3.9, 0, arrival) + Math.sin(elapsed * 0.45) * 0.12;
+    craft.current.position.y = THREE.MathUtils.lerp(-1.3, -0.3, arrival) + Math.cos(elapsed * 0.36) * 0.06;
+    craft.current.rotation.z = THREE.MathUtils.lerp(-0.18, 0, arrival) + Math.sin(elapsed * 0.45) * 0.035;
     craft.current.position.z = THREE.MathUtils.lerp(3, -0.3, progressRef.current);
-    if (engine.current) engine.current.intensity = 4 + Math.sin(clock.elapsedTime * 7) * 2 + arrival * 8;
+    if (engine.current) engine.current.intensity = 4 + Math.sin(elapsed * 7) * 2 + arrival * 8;
   });
   return <group ref={craft} rotation={[0.08, Math.PI, 0]}>
     <mesh castShadow rotation={[Math.PI / 2, 0, 0]}><capsuleGeometry args={[0.26, 1.9, 8, 24]} /><meshStandardMaterial color="#1d3e59" roughness={0.2} metalness={0.94} /></mesh>
@@ -91,13 +93,14 @@ const skillMeteors = [
 
 function SkillMeteors({ progressRef }: GameSceneProps) {
   const groups = useRef<Array<THREE.Group | null>>([]);
-  useFrame(({ clock }) => {
+  useFrame(() => {
+    const elapsed = performance.now() / 1000;
     groups.current.forEach((meteor, index) => {
       if (!meteor) return;
       const signal = skillMeteors[index];
       const phase = THREE.MathUtils.smoothstep(progressRef.current, signal.trigger, signal.trigger + 0.24);
-      meteor.position.set(signal.x - phase * 1.8, signal.y + Math.sin(clock.elapsedTime * 1.2 + index) * 0.1, THREE.MathUtils.lerp(-48, 5, phase));
-      meteor.rotation.set(clock.elapsedTime * 1.2, clock.elapsedTime * 0.8, -0.55);
+      meteor.position.set(signal.x - phase * 1.8, signal.y + Math.sin(elapsed * 1.2 + index) * 0.1, THREE.MathUtils.lerp(-48, 5, phase));
+      meteor.rotation.set(elapsed * 1.2, elapsed * 0.8, -0.55);
       meteor.visible = phase > 0 && phase < 0.98;
     });
   });
@@ -112,9 +115,10 @@ function SkillMeteors({ progressRef }: GameSceneProps) {
 function CameraFlight({ progressRef }: GameSceneProps) {
   const { camera } = useThree();
   const target = useMemo(() => new THREE.Vector3(), []);
-  useFrame(({ clock }) => {
+  useFrame(() => {
+    const elapsed = performance.now() / 1000;
     const progress = progressRef.current;
-    camera.position.lerp(new THREE.Vector3(0, 0.35 + Math.sin(clock.elapsedTime * 0.22) * 0.08, THREE.MathUtils.lerp(16, 2, progress)), 0.055);
+    camera.position.lerp(new THREE.Vector3(0, 0.35 + Math.sin(elapsed * 0.22) * 0.08, THREE.MathUtils.lerp(16, 2, progress)), 0.055);
     target.set(THREE.MathUtils.lerp(1.6, 0.6, progress), THREE.MathUtils.lerp(-0.5, -1.1, progress), THREE.MathUtils.lerp(-24, -15, progress));
     camera.lookAt(target);
   });

@@ -64,16 +64,46 @@ function FlightCraft({ progressRef }: GameSceneProps) {
   const craft = useRef<THREE.Group>(null);
   useFrame(({ clock }) => {
     if (!craft.current) return;
-    craft.current.position.x = Math.sin(clock.elapsedTime * 0.45) * 0.12;
-    craft.current.position.y = -1.55 + Math.cos(clock.elapsedTime * 0.36) * 0.06;
-    craft.current.rotation.z = Math.sin(clock.elapsedTime * 0.45) * 0.035;
+    craft.current.position.x = 3.9 + Math.sin(clock.elapsedTime * 0.45) * 0.12;
+    craft.current.position.y = -1.3 + Math.cos(clock.elapsedTime * 0.36) * 0.06;
+    craft.current.rotation.z = -0.18 + Math.sin(clock.elapsedTime * 0.45) * 0.035;
     craft.current.position.z = THREE.MathUtils.lerp(3, -1, progressRef.current);
   });
-  return <group ref={craft} rotation={[0.12, Math.PI, 0]}>
-    <mesh castShadow><coneGeometry args={[0.34, 2.3, 4]} /><meshStandardMaterial color="#2c4d68" roughness={0.27} metalness={0.9} /></mesh>
-    <mesh position={[0, 0.18, 0.6]} rotation={[0, Math.PI / 4, 0]}><octahedronGeometry args={[0.33, 2]} /><meshPhysicalMaterial color="#0e2b45" roughness={0.07} metalness={0.95} clearcoat={1} /></mesh>
-    <pointLight color="#5deaf1" intensity={6} distance={10} decay={2} position={[0, -0.2, -1.15]} />
+  return <group ref={craft} rotation={[0.08, Math.PI, 0]}>
+    <mesh castShadow rotation={[Math.PI / 2, 0, 0]}><capsuleGeometry args={[0.26, 1.9, 8, 24]} /><meshStandardMaterial color="#1d3e59" roughness={0.2} metalness={0.94} /></mesh>
+    <mesh position={[0, 0.13, 0.58]} rotation={[0, Math.PI / 4, 0]} scale={[0.85, 0.62, 1.3]}><sphereGeometry args={[0.34, 32, 20]} /><meshPhysicalMaterial color="#102d48" roughness={0.06} metalness={0.92} clearcoat={1} /></mesh>
+    <mesh castShadow position={[-0.67, -0.06, -0.08]} rotation={[0.04, 0.18, -0.1]}><boxGeometry args={[1.26, 0.06, 0.42]} /><meshStandardMaterial color="#294d68" roughness={0.28} metalness={0.88} /></mesh>
+    <mesh castShadow position={[0.67, -0.06, -0.08]} rotation={[0.04, -0.18, 0.1]}><boxGeometry args={[1.26, 0.06, 0.42]} /><meshStandardMaterial color="#294d68" roughness={0.28} metalness={0.88} /></mesh>
+    <mesh position={[0, -0.02, -1.22]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.18, 0.25, 0.38, 20]} /><meshStandardMaterial color="#24455d" emissive="#167e98" emissiveIntensity={2.4} metalness={0.85} /></mesh>
+    <pointLight color="#5deaf1" intensity={8} distance={12} decay={2} position={[0, -0.02, -1.48]} />
   </group>;
+}
+
+const skillMeteors = [
+  { color: "#5deaf1", x: -3.4, y: 1.5, trigger: 0.18 },
+  { color: "#a78bfa", x: 2.2, y: 2.5, trigger: 0.3 },
+  { color: "#ffb45d", x: -1.5, y: -0.3, trigger: 0.42 },
+  { color: "#f577a1", x: 4.1, y: 0.6, trigger: 0.54 },
+];
+
+function SkillMeteors({ progressRef }: GameSceneProps) {
+  const groups = useRef<Array<THREE.Group | null>>([]);
+  useFrame(({ clock }) => {
+    groups.current.forEach((meteor, index) => {
+      if (!meteor) return;
+      const signal = skillMeteors[index];
+      const phase = THREE.MathUtils.smoothstep(progressRef.current, signal.trigger, signal.trigger + 0.24);
+      meteor.position.set(signal.x - phase * 1.8, signal.y + Math.sin(clock.elapsedTime * 1.2 + index) * 0.1, THREE.MathUtils.lerp(-48, 5, phase));
+      meteor.rotation.set(clock.elapsedTime * 1.2, clock.elapsedTime * 0.8, -0.55);
+      meteor.visible = phase > 0 && phase < 0.98;
+    });
+  });
+
+  return <>{skillMeteors.map((meteor, index) => <group key={meteor.color} ref={(node) => { groups.current[index] = node; }}>
+    <mesh><icosahedronGeometry args={[0.28, 2]} /><meshStandardMaterial color="#142b42" emissive={meteor.color} emissiveIntensity={2.2} roughness={0.25} metalness={0.72} /></mesh>
+    <mesh position={[0, 0, 1.35]} rotation={[Math.PI / 2, 0, 0]}><coneGeometry args={[0.17, 2.7, 12, 1, true]} /><meshBasicMaterial color={meteor.color} transparent opacity={0.34} blending={THREE.AdditiveBlending} side={THREE.DoubleSide} depthWrite={false} /></mesh>
+    <pointLight color={meteor.color} intensity={5} distance={7} decay={2} />
+  </group>)}</>;
 }
 
 function CameraFlight({ progressRef }: GameSceneProps) {
@@ -97,6 +127,7 @@ function Flight({ progressRef }: GameSceneProps) {
     <StarTunnel progressRef={progressRef} />
     <Planet progressRef={progressRef} />
     <FlightCraft progressRef={progressRef} />
+    <SkillMeteors progressRef={progressRef} />
     <Sparkles count={120} scale={[34, 18, 82]} size={1.4} speed={0.13} color="#78ddec" position={[0, 0, -25]} />
     <CameraFlight progressRef={progressRef} />
     <EffectComposer multisampling={0}><Bloom luminanceThreshold={0.65} mipmapBlur intensity={1.05} radius={0.62} /><Vignette offset={0.12} darkness={0.92} /></EffectComposer>

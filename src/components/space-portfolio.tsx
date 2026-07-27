@@ -11,7 +11,7 @@ import GameScene from "@/components/game-scene";
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const jokes = ["Compiling confidence... 99%", "There is no place like 127.0.0.1.", "Ship small. Observe closely. Improve often."];
-const skillGroups = [["FRONTEND", "React / Next.js / Vue / Angular"], ["BACKEND", ".NET / C# / APIs / NestJS"], ["DATA", "PostgreSQL / SQL Server / MongoDB"], ["SYSTEMS", "Docker / Azure / CI/CD / Git"]];
+const skillGroups = [["FRONTEND", "React / Next.js / Vue / Angular"], ["BACKEND", ".NET / C# / APIs / NestJS"], ["DATA", "PostgreSQL / SQL Server / MongoDB"], ["SYSTEMS", "Docker / Azure / CI/CD / Git / AI"]];
 
 export default function SpacePortfolio() {
   const root = useRef<HTMLElement>(null);

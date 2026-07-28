@@ -5,7 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import GameScene from "@/components/game-scene";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -22,12 +22,36 @@ const skillGroups = [
   ["SYSTEMS", "Docker / Azure / CI/CD / Git / AI"],
 ];
 
+const subscribeToYear = () => () => {};
+const getCurrentYear = () => new Date().getFullYear();
+const getServerYear = () => undefined;
+
 export default function SpacePortfolio() {
   const root = useRef<HTMLElement>(null);
   const sceneProgress = useRef(0);
   const [jokeIndex, setJokeIndex] = useState(0);
   const [landing, setLanding] = useState(false);
+  const [hasStartedJourney, setHasStartedJourney] = useState(false);
+  const [atJourneyEnd, setAtJourneyEnd] = useState(false);
+  const year = useSyncExternalStore(
+    subscribeToYear,
+    getCurrentYear,
+    getServerYear,
+  );
   const joke = jokes[jokeIndex];
+  const scrollCue = atJourneyEnd
+    ? {
+        href: "#launch",
+        label: "Back to top",
+        ariaLabel: "Return to the top of the portfolio",
+        arrow: "↑",
+      }
+    : {
+        href: "#about",
+        label: "Scroll to explore",
+        ariaLabel: "Scroll to explore the portfolio",
+        arrow: "↓",
+      };
 
   useEffect(() => {
     const interval = window.setInterval(() => {
@@ -36,8 +60,27 @@ export default function SpacePortfolio() {
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const endBeat = root.current?.querySelector(".end-beat");
+    if (!endBeat) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setAtJourneyEnd(entry.isIntersecting),
+      { threshold: 0.5 },
+    );
+    observer.observe(endBeat);
+    return () => observer.disconnect();
+  }, []);
+
   useGSAP(
     () => {
+      ScrollTrigger.create({
+        trigger: "#about",
+        start: "top bottom",
+        onEnter: () => setHasStartedJourney(true),
+        onLeaveBack: () => setHasStartedJourney(false),
+      });
+
       const reducedMotion = window.matchMedia(
         "(prefers-reduced-motion: reduce)",
       ).matches;
@@ -212,19 +255,21 @@ export default function SpacePortfolio() {
             </div>
           </section>
         </div>
-        <a
-          className="scroll-cue"
-          href="#about"
-          aria-label="Scroll to advance the flight path"
-        >
-          <span className="scroll-cue-label">Scroll</span>
-          <span className="scroll-cue-arrow" aria-hidden="true">
-            ↓
-          </span>
-        </a>
+        {!hasStartedJourney || atJourneyEnd ? (
+          <a
+            className="scroll-cue"
+            href={scrollCue.href}
+            aria-label={scrollCue.ariaLabel}
+          >
+            <span className="scroll-cue-label">{scrollCue.label}</span>
+            <span className="scroll-cue-arrow" aria-hidden="true">
+              {scrollCue.arrow}
+            </span>
+          </a>
+        ) : null}
       </section>
       <footer className="site-footer">
-        © {new Date().getFullYear()} Enrique Martinez. Built for the long walk.
+        © {year} Enrique Martinez. Built for the long walk.
       </footer>
     </main>
   );

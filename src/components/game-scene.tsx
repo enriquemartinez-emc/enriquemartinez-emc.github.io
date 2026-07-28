@@ -4,15 +4,29 @@ import { Bloom, EffectComposer, Vignette } from "@react-three/postprocessing";
 import { AdaptiveDpr, Sparkles } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
+  Component,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type ReactNode,
   type MutableRefObject,
 } from "react";
 import * as THREE from "three";
 
 type GameSceneProps = { progressRef: MutableRefObject<number> };
+
+class SceneErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
 
 function seeded(index: number) {
   return (Math.sin(index * 999.91) * 43758.5453) % 1;
@@ -427,14 +441,17 @@ export default function GameScene({ progressRef }: GameSceneProps) {
   return (
     <div className="game-scene" aria-hidden="true">
       {enabled && (
-        <Canvas
-          dpr={[1, 1.75]}
-          camera={{ fov: 48, position: [0, 0.35, 16] }}
-          gl={{ antialias: false, powerPreference: "high-performance" }}
-        >
-          <AdaptiveDpr pixelated />
-          <Flight progressRef={progressRef} />
-        </Canvas>
+        <SceneErrorBoundary>
+          <Canvas
+            dpr={[1, 1.75]}
+            camera={{ fov: 48, position: [0, 0.35, 16] }}
+            fallback={null}
+            gl={{ antialias: false, powerPreference: "high-performance" }}
+          >
+            <AdaptiveDpr pixelated />
+            <Flight progressRef={progressRef} />
+          </Canvas>
+        </SceneErrorBoundary>
       )}
     </div>
   );

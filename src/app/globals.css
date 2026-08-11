@@ -7,6 +7,8 @@
   --sand: #d8a878;
   --cyan: #73e5eb;
   --amber: #ffc166;
+  --font-oxanium: "Oxanium", Arial, Helvetica, sans-serif;
+  --font-orbitron: "Orbitron", Arial, Helvetica, sans-serif;
 }
 * {
   box-sizing: border-box;
@@ -19,7 +21,7 @@ body {
   margin: 0;
   background: var(--void);
   color: var(--ink);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-oxanium);
 }
 a {
   color: inherit;
@@ -38,7 +40,7 @@ a {
   justify-content: space-between;
   padding: 1.2rem clamp(1rem, 4vw, 4rem);
   background: linear-gradient(to bottom, rgba(7, 17, 29, 0.94), transparent);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
 }
 .wordmark {
   color: var(--ink);
@@ -101,7 +103,7 @@ a {
 .skill-signals {
   z-index: 3;
   pointer-events: none;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: clamp(1.25rem, 1.8vw, 1.5rem);
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -209,7 +211,7 @@ a {
 .eyebrow {
   margin: 0 0 1rem;
   color: var(--cyan);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: 0.67rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -217,6 +219,7 @@ a {
 .story-beat h1,
 .story-beat h2 {
   margin: 0;
+  font-family: var(--font-orbitron);
   font-weight: 600;
   letter-spacing: -0.06em;
   line-height: 0.95;
@@ -252,7 +255,7 @@ a {
   background: transparent;
   box-shadow: none;
   color: var(--cyan);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: 0.65rem;
   letter-spacing: 0.14em;
   pointer-events: auto;
@@ -272,7 +275,7 @@ a {
   display: inline-block;
   margin-top: 1.5rem;
   color: var(--cyan);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   pointer-events: auto;
@@ -287,14 +290,14 @@ a {
 .skill-list span {
   border-left: 2px solid var(--cyan);
   color: var(--ink);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: 0.75rem;
   letter-spacing: 0.04em;
   padding-left: 0.75rem;
 }
 .contact-email {
   color: var(--amber);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: clamp(0.85rem, 1.6vw, 1.15rem);
   word-break: break-word;
 }
@@ -302,7 +305,7 @@ a {
   min-height: 80vh;
 }
 .end-beat p {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: 0.8rem !important;
 }
 .site-footer {
@@ -310,7 +313,7 @@ a {
   z-index: 3;
   padding: 1.5rem;
   color: var(--muted);
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-oxanium);
   font-size: 0.66rem;
   letter-spacing: 0.06em;
   text-align: center;

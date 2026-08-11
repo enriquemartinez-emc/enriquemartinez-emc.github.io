@@ -74,8 +74,203 @@ function StarTunnel({ progressRef }: GameSceneProps) {
   );
 }
 
+const planetVertexShader = /* glsl */ `
+  varying vec3 vPosition;
+  varying vec3 vNormal;
+
+  void main() {
+    vPosition = normalize(position);
+    vNormal = normalize(normalMatrix * normal);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const planetFragmentShader = /* glsl */ `
+  uniform float uTime;
+  varying vec3 vPosition;
+  varying vec3 vNormal;
+
+  float hash(vec3 point) {
+    point = fract(point * 0.3183099 + vec3(0.1, 0.2, 0.3));
+    point *= 17.0;
+    return fract(point.x * point.y * point.z * (point.x + point.y + point.z));
+  }
+
+  float noise(vec3 point) {
+    vec3 cell = floor(point);
+    vec3 local = fract(point);
+    local = local * local * (3.0 - 2.0 * local);
+    return mix(
+      mix(
+        mix(hash(cell), hash(cell + vec3(1.0, 0.0, 0.0)), local.x),
+        mix(hash(cell + vec3(0.0, 1.0, 0.0)), hash(cell + vec3(1.0, 1.0, 0.0)), local.x),
+        local.y
+      ),
+      mix(
+        mix(hash(cell + vec3(0.0, 0.0, 1.0)), hash(cell + vec3(1.0, 0.0, 1.0)), local.x),
+        mix(hash(cell + vec3(0.0, 1.0, 1.0)), hash(cell + vec3(1.0, 1.0, 1.0)), local.x),
+        local.y
+      ),
+      local.z
+    );
+  }
+
+  float fbm(vec3 point) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    for (int octave = 0; octave < 4; octave++) {
+      value += amplitude * noise(point);
+      point = point * 2.03 + vec3(7.1, 2.4, 4.8);
+      amplitude *= 0.5;
+    }
+    return value;
+  }
+
+  void main() {
+    vec3 point = vPosition * 3.4;
+    float drift = uTime * 0.025;
+    float turbulence = fbm(point * 1.7 + vec3(drift, -drift * 0.45, drift * 0.2));
+    float fineTurbulence = fbm(point * 5.2 - vec3(drift * 1.5, 0.0, drift));
+    float bands = sin((vPosition.y + turbulence * 0.16) * 24.0);
+    float bandMask = smoothstep(-0.72, 0.72, bands);
+
+    vec3 deep = vec3(0.055, 0.035, 0.16);
+    vec3 violet = vec3(0.28, 0.10, 0.42);
+    vec3 copper = vec3(0.72, 0.23, 0.20);
+    vec3 highlight = vec3(1.0, 0.49, 0.23);
+    vec3 color = mix(deep, violet, bandMask);
+    color = mix(color, copper, smoothstep(0.42, 0.78, turbulence) * 0.72);
+    color += highlight * smoothstep(0.7, 1.0, fineTurbulence) * 0.2;
+
+    float storm = smoothstep(0.76, 0.96, fbm(point * 2.8 + vec3(1.0, 4.0, -2.0)));
+    float stormShape = smoothstep(0.25, 0.85, 1.0 - abs(vPosition.x * 0.75 + vPosition.y * 0.35));
+    color += vec3(0.92, 0.19, 0.36) * storm * stormShape * 0.42;
+
+    float light = 0.42 + 0.58 * max(dot(vNormal, normalize(vec3(-0.55, 0.65, 0.75))), 0.0);
+    gl_FragColor = vec4(color * light, 1.0);
+  }
+`;
+
+const cloudFragmentShader = /* glsl */ `
+  uniform float uTime;
+  varying vec3 vPosition;
+
+  float hash(vec3 point) {
+    return fract(sin(dot(point, vec3(17.13, 41.71, 93.17))) * 43758.5453);
+  }
+
+  float noise(vec3 point) {
+    vec3 cell = floor(point);
+    vec3 local = fract(point);
+    local = local * local * (3.0 - 2.0 * local);
+    float a = hash(cell);
+    float b = hash(cell + vec3(1.0, 0.0, 0.0));
+    float c = hash(cell + vec3(0.0, 1.0, 0.0));
+    float d = hash(cell + vec3(1.0, 1.0, 0.0));
+    float e = hash(cell + vec3(0.0, 0.0, 1.0));
+    float f = hash(cell + vec3(1.0, 0.0, 1.0));
+    float g = hash(cell + vec3(0.0, 1.0, 1.0));
+    float h = hash(cell + vec3(1.0, 1.0, 1.0));
+    return mix(mix(mix(a, b, local.x), mix(c, d, local.x), local.y), mix(mix(e, f, local.x), mix(g, h, local.x), local.y), local.z);
+  }
+
+  void main() {
+    vec3 point = vPosition * 6.0 + vec3(uTime * 0.035, -uTime * 0.012, 0.0);
+    float clouds = noise(point) * 0.62 + noise(point * 2.1) * 0.38;
+    float density = smoothstep(0.54, 0.72, clouds);
+    gl_FragColor = vec4(vec3(0.86, 0.42, 0.62), density * 0.22);
+  }
+`;
+
+const atmosphereVertexShader = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vViewDirection;
+
+  void main() {
+    vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+    vNormal = normalize(mat3(modelMatrix) * normal);
+    vViewDirection = normalize(cameraPosition - worldPosition.xyz);
+    gl_Position = projectionMatrix * viewMatrix * worldPosition;
+  }
+`;
+
+const atmosphereFragmentShader = /* glsl */ `
+  varying vec3 vNormal;
+  varying vec3 vViewDirection;
+
+  void main() {
+    float rim = pow(1.0 - max(dot(normalize(vNormal), normalize(vViewDirection)), 0.0), 3.2);
+    gl_FragColor = vec4(0.32, 0.72, 1.0, rim * 0.72);
+  }
+`;
+
+function PlanetSurface() {
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: { uTime: { value: 0 } },
+        vertexShader: planetVertexShader,
+        fragmentShader: planetFragmentShader,
+      }),
+    [],
+  );
+  const materialRef = useRef(material);
+
+  useFrame((_, delta) => {
+    materialRef.current.uniforms.uTime.value += delta;
+  });
+
+  return (
+    <mesh>
+      <sphereGeometry args={[8, 96, 64]} />
+      <primitive object={material} attach="material" />
+    </mesh>
+  );
+}
+
+function PlanetClouds() {
+  const material = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: { uTime: { value: 0 } },
+        vertexShader: planetVertexShader,
+        fragmentShader: cloudFragmentShader,
+        transparent: true,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      }),
+    [],
+  );
+  const materialRef = useRef(material);
+
+  useFrame((_, delta) => {
+    materialRef.current.uniforms.uTime.value += delta;
+  });
+
+  return (
+    <mesh scale={1.012} rotation={[0.04, 0, -0.08]}>
+      <sphereGeometry args={[8, 64, 48]} />
+      <primitive object={material} attach="material" />
+    </mesh>
+  );
+}
+
 function Planet({ progressRef }: GameSceneProps) {
   const planet = useRef<THREE.Group>(null);
+  const rings = useRef<THREE.Group>(null);
+  const atmosphere = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        vertexShader: atmosphereVertexShader,
+        fragmentShader: atmosphereFragmentShader,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+        side: THREE.BackSide,
+      }),
+    [],
+  );
+
   useFrame(() => {
     if (!planet.current) return;
     const elapsed = performance.now() / 1000;
@@ -85,23 +280,50 @@ function Planet({ progressRef }: GameSceneProps) {
     planet.current.position.y = THREE.MathUtils.lerp(-3.6, -1.6, progress);
     planet.current.scale.setScalar(THREE.MathUtils.lerp(0.65, 1.8, progress));
     planet.current.rotation.y = elapsed * 0.024;
+    if (rings.current) {
+      rings.current.rotation.z = -0.18 + Math.sin(elapsed * 0.08) * 0.025;
+      rings.current.rotation.y = elapsed * 0.012;
+    }
   });
 
   return (
     <group ref={planet}>
-      <mesh>
-        <sphereGeometry args={[8, 96, 64]} />
-        <meshStandardMaterial
-          color="#4c78aa"
-          emissive="#183d68"
-          emissiveIntensity={1.4}
-          roughness={0.62}
-          metalness={0.02}
-        />
+      <PlanetSurface />
+      <PlanetClouds />
+      <mesh scale={1.045}>
+        <sphereGeometry args={[8, 64, 48]} />
+        <primitive object={atmosphere} attach="material" />
       </mesh>
+      <group ref={rings} rotation={[0.56, 0.18, -0.18]}>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[10.4, 0.22, 12, 128]} />
+          <meshStandardMaterial
+            color="#d16a9d"
+            emissive="#6d285e"
+            emissiveIntensity={1.4}
+            roughness={0.45}
+            metalness={0.35}
+            transparent
+            opacity={0.76}
+          />
+        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[11.35, 0.08, 8, 128]} />
+          <meshBasicMaterial
+            color="#66d4e9"
+            transparent
+            opacity={0.7}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[12.05, 0.04, 8, 128]} />
+          <meshBasicMaterial color="#ffc166" transparent opacity={0.58} />
+        </mesh>
+      </group>
       <pointLight
-        color="#7eeaf3"
-        intensity={18}
+        color="#ff6cae"
+        intensity={22}
         distance={48}
         decay={2}
         position={[-6, 4, 3]}

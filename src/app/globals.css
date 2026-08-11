@@ -239,6 +239,21 @@ a {
 .landing h1 span {
   color: var(--sand);
 }
+.landing-copy {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    opacity 0.55s ease,
+    transform 0.55s ease,
+    visibility 0s linear 0.55s;
+  visibility: hidden;
+}
+.landing.is-landing .landing-copy {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.08s, 0.08s, 0s;
+  visibility: visible;
+}
 .scroll-cue {
   position: fixed;
   z-index: 4;
@@ -360,6 +375,12 @@ a {
     padding: 1.25rem;
     background: rgba(7, 17, 29, 0.72);
     border-left: 1px solid rgba(115, 229, 235, 0.35);
+  }
+  .landing-copy {
+    opacity: 1;
+    transform: none;
+    transition: none;
+    visibility: visible;
   }
   .skill-signal {
     opacity: 1;

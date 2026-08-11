@@ -172,8 +172,11 @@ export default function SpacePortfolio() {
           </div>
         </div>
         <div className="journey-content">
-          <section id="launch" className="story-beat landing">
-            <div>
+          <section
+            id="launch"
+            className={`story-beat landing${landing ? " is-landing" : ""}`}
+          >
+            <div className="landing-copy">
               <p className="eyebrow">01 / Landing sequence complete</p>
               <h1>
                 Enrique

@@ -127,3 +127,26 @@ export const atmosphereFragmentShader = /* glsl */ `
     gl_FragColor = vec4(0.32, 0.72, 1.0, rim * 0.72);
   }
 `;
+
+export const starVertexShader = /* glsl */ `
+  uniform float uTravel;
+  uniform float uScale;
+  varying float vFade;
+
+  void main() {
+    vec3 point = position;
+    point.z = mod(point.z + uTravel + 120.0, 140.0) - 120.0;
+    vec4 viewPosition = modelViewMatrix * vec4(point, 1.0);
+    gl_PointSize = 0.07 * uScale / -viewPosition.z;
+    vFade = 1.0 - smoothstep(24.0, 96.0, -viewPosition.z);
+    gl_Position = projectionMatrix * viewPosition;
+  }
+`;
+
+export const starFragmentShader = /* glsl */ `
+  varying float vFade;
+
+  void main() {
+    gl_FragColor = vec4(0.737, 0.933, 0.965, 0.82 * vFade);
+  }
+`;

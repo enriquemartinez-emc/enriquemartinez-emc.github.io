@@ -30,11 +30,28 @@ describe("getFeaturedRepos", () => {
       repo({ name: "old", archived: true }),
       repo({ name: "enriquemartinez-emc" }),
       repo({ name: "enriquemartinez-emc.github.io" }),
+      repo({ name: "window-shop" }),
     ]);
 
     const repos = await getFeaturedRepos();
 
     expect(repos.map((item) => item.name)).toEqual(["keep"]);
+  });
+
+  it("puts pinned repos first and keeps the rest in API order", async () => {
+    mockFetch([
+      repo({ name: "recent" }),
+      repo({ name: "older" }),
+      repo({ name: "vitrum" }),
+    ]);
+
+    const repos = await getFeaturedRepos();
+
+    expect(repos.map((item) => item.name)).toEqual([
+      "vitrum",
+      "recent",
+      "older",
+    ]);
   });
 
   it("maps fields and turns an empty homepage into null", async () => {

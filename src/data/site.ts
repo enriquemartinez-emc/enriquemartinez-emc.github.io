@@ -17,3 +17,9 @@ export const skillGroups = [
   { label: "Data", technologies: "PostgreSQL / SQL Server / MongoDB" },
   { label: "Systems", technologies: "Docker / Azure / CI/CD / Git / AI" },
 ];
+
+/** Repos always shown first in the Work section, in this order. */
+export const pinnedRepos = ["vitrum"];
+
+/** Public repos that should not appear in the Work section. */
+export const hiddenRepos = ["window-shop"];

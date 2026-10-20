@@ -137,23 +137,6 @@ a {
   top: 42%;
   color: #f78cac;
 }
-.skill-signals.is-landing .skill-signal {
-  left: calc(100% - 18rem);
-  right: auto;
-}
-.skill-signals.is-landing .signal-frontend {
-  top: 34%;
-}
-.skill-signals.is-landing .signal-backend {
-  top: 41%;
-}
-.skill-signals.is-landing .signal-data {
-  top: 48%;
-}
-.skill-signals.is-landing .signal-systems {
-  top: 55%;
-}
-
 .journey-content {
   position: relative;
   z-index: 2;
@@ -240,19 +223,12 @@ a {
   color: var(--sand);
 }
 .landing-copy {
-  opacity: 0;
-  transform: translateY(1.25rem);
-  transition:
-    opacity 0.55s ease,
-    transform 0.55s ease,
-    visibility 0s linear 0.55s;
-  visibility: hidden;
+  animation: hero-rise 0.7s ease-out both;
 }
-.landing.is-landing .landing-copy {
-  opacity: 1;
-  transform: translateY(0);
-  transition-delay: 0.08s, 0.08s, 0s;
-  visibility: visible;
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
 }
 .scroll-cue {
   position: fixed;
@@ -300,28 +276,67 @@ a {
 .skill-list {
   display: grid;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  list-style: none;
 }
-.skill-list span {
+.skill-list li {
   border-left: 2px solid var(--cyan);
   color: var(--ink);
   font-family: var(--font-oxanium);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   letter-spacing: 0.04em;
   padding-left: 0.75rem;
+}
+.skill-list strong {
+  color: var(--cyan);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.work-beat > div {
+  max-width: 64rem;
+}
+.work-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1rem;
+  margin: 2rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.work-card {
+  padding: 1.25rem;
+  border: 1px solid rgba(115, 229, 235, 0.25);
+  border-radius: 0.5rem;
+  background: rgba(7, 17, 29, 0.78);
+  backdrop-filter: blur(6px);
+}
+.work-card h3 {
+  margin: 0;
+  font-family: var(--font-orbitron);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.work-card a {
+  pointer-events: auto;
+  text-decoration-color: rgba(115, 229, 235, 0.4);
+  text-underline-offset: 0.3em;
+}
+.story-beat .work-card p {
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+.story-beat .work-card p.work-meta {
+  color: var(--cyan);
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
 }
 .contact-email {
   color: var(--amber);
   font-family: var(--font-oxanium);
   font-size: clamp(0.85rem, 1.6vw, 1.15rem);
   word-break: break-word;
-}
-.end-beat {
-  min-height: 80vh;
-}
-.end-beat p {
-  font-family: var(--font-oxanium);
-  font-size: 0.8rem !important;
 }
 .site-footer {
   position: relative;
@@ -340,6 +355,12 @@ a {
   }
   to {
     filter: brightness(1.7);
+  }
+}
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
   }
 }
 @keyframes scroll-nudge {
@@ -376,12 +397,6 @@ a {
     background: rgba(7, 17, 29, 0.72);
     border-left: 1px solid rgba(115, 229, 235, 0.35);
   }
-  .landing-copy {
-    opacity: 1;
-    transform: none;
-    transition: none;
-    visibility: visible;
-  }
   .skill-signal {
     opacity: 1;
   }
@@ -390,7 +405,8 @@ a {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .story-beat:not(.landing)::before {
+  .story-beat:not(.landing)::before,
+  .landing-copy {
     animation: none;
   }
   .scroll-cue-label,

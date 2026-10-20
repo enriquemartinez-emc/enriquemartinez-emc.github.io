@@ -80,6 +80,8 @@ jobs:
       - name: Unit tests
         run: ${{ steps.detect-package-manager.outputs.manager }} test
       - name: Build with Next.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

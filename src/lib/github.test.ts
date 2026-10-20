@@ -19,7 +19,10 @@ const mockFetch = (body: unknown, ok = true) =>
     vi.fn().mockResolvedValue({ ok, json: async () => body }),
   );
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 
 describe("getFeaturedRepos", () => {
   it("keeps only described, non-fork, non-archived, non-site repos", async () => {
@@ -79,6 +82,26 @@ describe("getFeaturedRepos", () => {
     );
 
     expect(await getFeaturedRepos()).toHaveLength(6);
+  });
+
+  it("authenticates with GITHUB_TOKEN when it is set", async () => {
+    vi.stubEnv("GITHUB_TOKEN", "secret");
+    mockFetch([repo()]);
+
+    await getFeaturedRepos();
+
+    const [, init] = vi.mocked(fetch).mock.calls[0];
+    expect(init?.headers).toMatchObject({ Authorization: "Bearer secret" });
+  });
+
+  it("sends no Authorization header without a token", async () => {
+    vi.stubEnv("GITHUB_TOKEN", "");
+    mockFetch([repo()]);
+
+    await getFeaturedRepos();
+
+    const [, init] = vi.mocked(fetch).mock.calls[0];
+    expect(init?.headers).not.toHaveProperty("Authorization");
   });
 
   it("returns an empty list when the API responds with an error", async () => {

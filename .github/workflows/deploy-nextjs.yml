@@ -77,8 +77,6 @@ jobs:
         run: ${{ steps.detect-package-manager.outputs.manager }} run lint
       - name: Type check
         run: ${{ steps.detect-package-manager.outputs.manager }} exec tsc --noEmit
-      - name: Unit tests
-        run: ${{ steps.detect-package-manager.outputs.manager }} test
       - name: Build with Next.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

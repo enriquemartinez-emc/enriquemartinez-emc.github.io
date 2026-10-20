@@ -1,15 +1,58 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: dark;
   --void: #07111d;
   --ink: #e7edf2;
   --muted: #9eacb9;
-  --cyan: #73e5eb;
-  --accent: var(--cyan);
+  --accent: #73e5eb;
+  --accent-line: color-mix(in srgb, var(--accent) 50%, transparent);
+  --accent-soft: color-mix(in srgb, var(--accent) 40%, transparent);
   --glass: rgba(7, 17, 29, 0.58);
   --glass-border: rgba(231, 237, 242, 0.1);
+  --nav-bg: rgba(2, 7, 17, 0.72);
+  --card-bg: rgba(2, 7, 17, 0.55);
+  --poster:
+    radial-gradient(
+      circle at 82% 96%,
+      rgba(72, 178, 176, 0.5) 0 7%,
+      rgba(34, 94, 112, 0.4) 13%,
+      transparent 32%
+    ),
+    url("/stars.svg"), linear-gradient(#020711, #07111d);
+  --poster-size: 100% 100%, 720px 720px, 100% 100%;
+  --poster-position: 0 0;
+  --poster-repeat: repeat;
   --font-oxanium: "Oxanium", Arial, Helvetica, sans-serif;
   --font-orbitron: "Orbitron", Arial, Helvetica, sans-serif;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --void: #fbeed9;
+  --ink: #14213d;
+  --muted: #475467;
+  --accent: #07606a;
+  --glass: rgba(255, 250, 242, 0.74);
+  --glass-border: rgba(20, 33, 61, 0.14);
+  --nav-bg: rgba(251, 238, 217, 0.82);
+  --card-bg: rgba(255, 252, 246, 0.72);
+  --poster:
+    url("/dunes.svg"),
+    radial-gradient(
+      circle at 76% 24%,
+      rgba(255, 247, 214, 0.95) 0 4%,
+      rgba(255, 214, 150, 0.55) 9%,
+      transparent 26%
+    ),
+    radial-gradient(
+      circle at 66% 70%,
+      rgba(132, 196, 205, 0.9) 0 8.5%,
+      rgba(132, 196, 205, 0) 8.8%
+    ),
+    linear-gradient(#b9dff0, #f6e7d0 62%, #f3c995);
+  --poster-size: 100% 38%, 100% 100%, 100% 100%, 100% 100%;
+  --poster-position: center bottom, 0 0, 0 0, 0 0;
+  --poster-repeat: no-repeat;
 }
 * {
   box-sizing: border-box;
@@ -37,7 +80,7 @@ a {
   padding: 0.6rem 0.9rem;
   border-radius: 0.4rem;
   background: var(--void);
-  color: var(--cyan);
+  color: var(--accent);
   font-size: 0.875rem;
   transform: translateY(-200%);
 }
@@ -61,7 +104,7 @@ a {
   justify-content: space-between;
   padding: 1.2rem clamp(1rem, 4vw, 4rem);
   border-bottom: 1px solid var(--glass-border);
-  background: rgba(2, 7, 17, 0.72);
+  background: var(--nav-bg);
   backdrop-filter: blur(12px);
   font-family: var(--font-oxanium);
 }
@@ -92,7 +135,7 @@ a {
 }
 .nav-links a:hover,
 .nav-links a:focus-visible {
-  color: var(--cyan);
+  color: var(--accent);
 }
 .motion-toggle {
   padding: 0;
@@ -108,12 +151,32 @@ a {
 }
 .motion-toggle:hover,
 .motion-toggle:focus-visible {
-  color: var(--cyan);
+  color: var(--accent);
+}
+.theme-toggle {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  border-color: var(--accent-line);
+  color: var(--accent);
 }
 .nav-links .nav-signal {
-  border: 1px solid rgba(115, 229, 235, 0.5);
+  border: 1px solid var(--accent-line);
   border-radius: 999px;
-  color: var(--cyan);
+  color: var(--accent);
   padding: 0.55rem 0.7rem;
 }
 
@@ -125,18 +188,10 @@ a {
   top: 0;
   height: 100vh;
   overflow: hidden;
-  background:
-    radial-gradient(
-      circle at 82% 96%,
-      rgba(72, 178, 176, 0.5) 0 7%,
-      rgba(34, 94, 112, 0.4) 13%,
-      transparent 32%
-    ),
-    url("/stars.svg"), linear-gradient(#020711, #07111d);
-  background-size:
-    100% 100%,
-    720px 720px,
-    100% 100%;
+  background-image: var(--poster);
+  background-size: var(--poster-size);
+  background-position: var(--poster-position);
+  background-repeat: var(--poster-repeat);
 }
 .game-scene,
 .skill-signals {
@@ -188,6 +243,16 @@ a {
   top: 17%;
   color: #f78cac;
 }
+/* Light theme: the dark flight scene is not mounted, only the daylight poster. */
+:root[data-theme="light"] .skill-signals {
+  display: none;
+}
+:root[data-theme="light"] .scroll-cue {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--void) 92%, transparent);
+}
 .journey-content {
   position: relative;
   z-index: 2;
@@ -218,7 +283,7 @@ a {
 }
 .eyebrow {
   margin: 0 0 1rem;
-  color: var(--cyan);
+  color: var(--accent);
   font-family: var(--font-oxanium);
   font-size: 0.8125rem;
   letter-spacing: 0.15em;
@@ -271,7 +336,7 @@ a {
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  color: var(--cyan);
+  color: var(--accent);
   font-family: var(--font-oxanium);
   font-size: 0.8125rem;
   letter-spacing: 0.14em;
@@ -288,12 +353,12 @@ a {
 .story-link {
   display: inline-block;
   margin-top: 1.5rem;
-  color: var(--cyan);
+  color: var(--accent);
   font-family: var(--font-oxanium);
   font-size: 0.875rem;
   letter-spacing: 0.08em;
   pointer-events: auto;
-  text-decoration-color: rgba(115, 229, 235, 0.4);
+  text-decoration-color: var(--accent-soft);
   text-underline-offset: 0.4em;
 }
 .skill-list {
@@ -332,14 +397,14 @@ a {
   padding: 1.25rem;
   border: 1px solid var(--glass-border);
   border-radius: 0.75rem;
-  background: rgba(2, 7, 17, 0.55);
+  background: var(--card-bg);
   transition:
     border-color 0.25s,
     transform 0.25s;
 }
 .work-card:hover,
 .work-card:focus-within {
-  border-color: rgba(115, 229, 235, 0.55);
+  border-color: color-mix(in srgb, var(--accent) 55%, transparent);
   transform: translateY(-2px);
 }
 .work-card h3 {
@@ -362,7 +427,7 @@ a {
   position: relative;
   z-index: 1;
   pointer-events: auto;
-  text-decoration-color: rgba(115, 229, 235, 0.4);
+  text-decoration-color: var(--accent-soft);
   text-underline-offset: 0.3em;
 }
 .story-beat .work-card p {

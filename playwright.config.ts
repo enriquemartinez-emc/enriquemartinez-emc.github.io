@@ -7,5 +7,5 @@ export default defineConfig({
     url: "http://localhost:3100",
     reuseExistingServer: !process.env.CI,
   },
-  use: { baseURL: "http://localhost:3100" },
+  use: { baseURL: "http://localhost:3100", colorScheme: "dark" },
 });

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Orbitron, Oxanium } from "next/font/google";
 import Script from "next/script";
 import { profile } from "@/data/site";
@@ -41,6 +41,16 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title, description },
 };
 
+// Runs before first paint so the saved or system theme never flashes.
+const themeScript = `(function(){var t;try{var s=localStorage.getItem("theme");t=s==="light"||s==="dark"?s:null}catch(e){}if(!t){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.dataset.theme=t})()`;
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbeed9" },
+    { media: "(prefers-color-scheme: dark)", color: "#07111d" },
+  ],
+};
+
 const personJsonLd = JSON.stringify({
   "@context": "https://schema.org",
   "@type": "Person",
@@ -56,7 +66,10 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body
         className={`${geist.variable} ${oxanium.variable} ${orbitron.variable}`}
       >

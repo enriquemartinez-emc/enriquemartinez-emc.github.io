@@ -4,25 +4,19 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
-import GameScene from "@/components/game-scene";
 import WorkSection from "@/components/work-section";
+import { jokes, profile, skillGroups } from "@/data/site";
+import { MOTION_QUERY, useSceneEnabled } from "@/hooks/use-scene-enabled";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import type { Repo } from "@/lib/github";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-const jokes = [
-  "Compiling confidence... 99%",
-  "There is no place like 127.0.0.1.",
-  "Ship small. Observe closely. Improve often.",
-];
-const skillGroups = [
-  ["Frontend", "React / Next.js / Vue / Angular"],
-  ["Backend", ".NET / C# / APIs / NestJS"],
-  ["Data", "PostgreSQL / SQL Server / MongoDB"],
-  ["Systems", "Docker / Azure / CI/CD / Git / AI"],
-];
+// three.js and friends only download when the scene is actually mounted.
+const GameScene = dynamic(() => import("@/scene/game-scene"), { ssr: false });
 
 const subscribeToYear = () => () => {};
 const getCurrentYear = () => new Date().getFullYear();
@@ -32,7 +26,11 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
   const root = useRef<HTMLElement>(null);
   const sceneProgress = useRef(0);
   const [jokeIndex, setJokeIndex] = useState(0);
+  const floatTween = useRef<gsap.core.Tween | null>(null);
   const [hasStartedJourney, setHasStartedJourney] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const sceneEnabled = useSceneEnabled();
+  const motionEnabled = useMediaQuery(MOTION_QUERY);
   const year = useSyncExternalStore(
     subscribeToYear,
     getCurrentYear,
@@ -47,6 +45,10 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
     return () => window.clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    floatTween.current?.paused(paused);
+  }, [paused]);
+
   useGSAP(
     () => {
       ScrollTrigger.create({
@@ -56,11 +58,7 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
         onLeaveBack: () => setHasStartedJourney(false),
       });
 
-      const reducedMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      const desktop = window.matchMedia("(min-width: 768px)").matches;
-      if (reducedMotion || !desktop) return;
+      if (!motionEnabled) return;
 
       const lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
       const update = (time: number) => lenis.raf(time * 1000);
@@ -83,7 +81,7 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
       timeline.to(".signal-data", { autoAlpha: 1, duration: 0.1 }, 0.28);
       timeline.to(".signal-systems", { autoAlpha: 1, duration: 0.1 }, 0.36);
       timeline.to(".skill-signal", { autoAlpha: 0, duration: 0.1 }, 0.58);
-      gsap.to(".skill-signal", {
+      floatTween.current = gsap.to(".skill-signal", {
         y: (index) => (index % 2 === 0 ? -10 : 10),
         duration: 1.8,
         ease: "sine.inOut",
@@ -100,37 +98,45 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
         gsap.ticker.remove(update);
       };
     },
-    { scope: root },
+    { scope: root, dependencies: [motionEnabled] },
   );
 
   return (
-    <main className="space-site" ref={root}>
+    <main className="space-site" ref={root} data-paused={paused}>
+      <a className="skip-link" href="#launch">
+        Skip to content
+      </a>
       <header className="site-nav">
         <Link href="#launch" className="wordmark">
           <span>EM</span>
-          {" // expedition"}
+          <span className="wordmark-tail">{" // expedition"}</span>
         </Link>
         <nav className="nav-links" aria-label="Portfolio navigation">
           <Link href="#work">Work</Link>
           <Link href="#about">About</Link>
-          <a
-            href="https://github.com/enriquemartinez-emc"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a href={profile.githubUrl} target="_blank" rel="noreferrer">
             GitHub
           </a>
-          <a
-            className="nav-signal"
-            href="mailto:enrique.martinez.swe@outlook.com"
+          <button
+            type="button"
+            className="motion-toggle"
+            aria-pressed={paused}
+            onClick={() => setPaused((value) => !value)}
           >
+            {paused ? "Play motion" : "Pause motion"}
+          </button>
+          <a className="nav-signal" href={`mailto:${profile.email}`}>
             Contact
           </a>
         </nav>
       </header>
       <section className="journey" aria-label="Enrique's software portfolio">
         <div className="journey-canvas">
-          <GameScene progressRef={sceneProgress} />
+          <div className="game-scene" aria-hidden="true">
+            {sceneEnabled ? (
+              <GameScene progressRef={sceneProgress} paused={paused} />
+            ) : null}
+          </div>
           <div className="skill-signals" aria-hidden="true">
             <span className="skill-signal signal-frontend">Frontend</span>
             <span className="skill-signal signal-backend">Backend</span>
@@ -139,10 +145,14 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
           </div>
         </div>
         <div className="journey-content">
-          <section id="launch" className="story-beat landing">
+          <section
+            id="launch"
+            className="story-beat landing"
+            aria-labelledby="hero-title"
+          >
             <div className="landing-copy">
               <p className="eyebrow">Full-stack developer</p>
-              <h1>
+              <h1 id="hero-title">
                 Enrique
                 <br />
                 <span>Martinez</span>
@@ -157,16 +167,13 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
                 </a>
                 <a
                   className="story-link"
-                  href="https://github.com/enriquemartinez-emc"
+                  href={profile.githubUrl}
                   target="_blank"
                   rel="noreferrer"
                 >
                   GitHub →
                 </a>
-                <a
-                  className="story-link"
-                  href="mailto:enrique.martinez.swe@outlook.com"
-                >
+                <a className="story-link" href={`mailto:${profile.email}`}>
                   Contact →
                 </a>
               </div>
@@ -196,7 +203,7 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
               <p className="eyebrow">Skills</p>
               <h2 id="skills-title">What I work with.</h2>
               <ul className="skill-list">
-                {skillGroups.map(([label, technologies]) => (
+                {skillGroups.map(({ label, technologies }) => (
                   <li key={label}>
                     <strong>{label}</strong> / {technologies}
                   </li>
@@ -216,9 +223,9 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
               <p>For a new build, a hard problem, or a useful conversation:</p>
               <a
                 className="contact-email story-link"
-                href="mailto:enrique.martinez.swe@outlook.com"
+                href={`mailto:${profile.email}`}
               >
-                enrique.martinez.swe@outlook.com
+                {profile.email}
               </a>
             </div>
           </section>
@@ -237,7 +244,7 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
         ) : null}
       </section>
       <footer className="site-footer">
-        © {year} Enrique Martinez. {joke}
+        © {year} {profile.name}. {joke}
       </footer>
     </main>
   );

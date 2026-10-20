@@ -1,14 +1,17 @@
 import { caseStudies } from "@/data/case-studies";
+import { profile } from "@/data/site";
 import type { Repo } from "@/lib/github";
-
-const GITHUB_URL = "https://github.com/enriquemartinez-emc";
 
 export default function WorkSection({ repos }: { repos: Repo[] }) {
   return (
-    <section id="work" className="story-beat work-beat">
+    <section
+      id="work"
+      className="story-beat work-beat"
+      aria-labelledby="work-title"
+    >
       <div>
         <p className="eyebrow">Selected work</p>
-        <h2>Public projects, private depth.</h2>
+        <h2 id="work-title">Public projects, private depth.</h2>
         <p>
           Most of my professional work is private, so these public repositories
           show how I structure and ship software.
@@ -54,7 +57,7 @@ export default function WorkSection({ repos }: { repos: Repo[] }) {
         ) : null}
         <a
           className="story-link"
-          href={GITHUB_URL}
+          href={profile.githubUrl}
           target="_blank"
           rel="noreferrer"
         >

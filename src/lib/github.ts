@@ -1,3 +1,5 @@
+import { profile } from "@/data/site";
+
 export type Repo = {
   name: string;
   description: string;
@@ -18,7 +20,7 @@ type GitHubRepo = {
   archived: boolean;
 };
 
-const GITHUB_USER = "enriquemartinez-emc";
+const GITHUB_USER = profile.githubUser;
 const EXCLUDED = new Set([GITHUB_USER, `${GITHUB_USER}.github.io`]);
 const MAX_REPOS = 6;
 

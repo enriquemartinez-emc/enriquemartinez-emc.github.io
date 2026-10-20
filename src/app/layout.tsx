@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
-import { Orbitron, Oxanium } from "next/font/google";
+import { Geist, Orbitron, Oxanium } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 
+const geist = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist",
+  display: "swap",
+});
 const oxanium = Oxanium({
   subsets: ["latin"],
   variable: "--font-oxanium",
@@ -24,7 +29,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className={`${oxanium.variable} ${orbitron.variable}`}>
+      <body
+        className={`${geist.variable} ${oxanium.variable} ${orbitron.variable}`}
+      >
         <Script
           src="https://cloud.umami.is/script.js"
           data-website-id="aedd3fdc-c7cd-4840-87f0-b89c1fed95ea"

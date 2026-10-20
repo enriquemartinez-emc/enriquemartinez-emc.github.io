@@ -7,6 +7,8 @@ import Lenis from "lenis";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import GameScene from "@/components/game-scene";
+import WorkSection from "@/components/work-section";
+import type { Repo } from "@/lib/github";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -16,60 +18,33 @@ const jokes = [
   "Ship small. Observe closely. Improve often.",
 ];
 const skillGroups = [
-  ["FRONTEND", "React / Next.js / Vue / Angular"],
-  ["BACKEND", ".NET / C# / APIs / NestJS"],
-  ["DATA", "PostgreSQL / SQL Server / MongoDB"],
-  ["SYSTEMS", "Docker / Azure / CI/CD / Git / AI"],
+  ["Frontend", "React / Next.js / Vue / Angular"],
+  ["Backend", ".NET / C# / APIs / NestJS"],
+  ["Data", "PostgreSQL / SQL Server / MongoDB"],
+  ["Systems", "Docker / Azure / CI/CD / Git / AI"],
 ];
 
 const subscribeToYear = () => () => {};
 const getCurrentYear = () => new Date().getFullYear();
 const getServerYear = () => undefined;
 
-export default function SpacePortfolio() {
+export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
   const root = useRef<HTMLElement>(null);
   const sceneProgress = useRef(0);
   const [jokeIndex, setJokeIndex] = useState(0);
-  const [landing, setLanding] = useState(false);
   const [hasStartedJourney, setHasStartedJourney] = useState(false);
-  const [atJourneyEnd, setAtJourneyEnd] = useState(false);
   const year = useSyncExternalStore(
     subscribeToYear,
     getCurrentYear,
     getServerYear,
   );
   const joke = jokes[jokeIndex];
-  const scrollCue = atJourneyEnd
-    ? {
-        href: "#launch",
-        label: "Back to top",
-        ariaLabel: "Return to the top of the portfolio",
-        arrow: "↑",
-      }
-    : {
-        href: "#about",
-        label: "Scroll to explore",
-        ariaLabel: "Scroll to explore the portfolio",
-        arrow: "↓",
-      };
 
   useEffect(() => {
     const interval = window.setInterval(() => {
       setJokeIndex((index) => (index + 1) % jokes.length);
     }, 6000);
     return () => window.clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    const endBeat = root.current?.querySelector(".end-beat");
-    if (!endBeat) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => setAtJourneyEnd(entry.isIntersecting),
-      { threshold: 0.5 },
-    );
-    observer.observe(endBeat);
-    return () => observer.disconnect();
   }, []);
 
   useGSAP(
@@ -92,21 +67,22 @@ export default function SpacePortfolio() {
       lenis.on("scroll", ScrollTrigger.update);
       gsap.ticker.add(update);
       gsap.ticker.lagSmoothing(0);
+      // The canvas is sticky, so the flight is scrubbed by the page's own
+      // scroll instead of a pinned spacer that delays the content.
       const timeline = gsap.timeline({
         scrollTrigger: {
-          trigger: ".journey",
+          trigger: ".journey-content",
           start: "top top",
-          end: "+=5600",
+          end: "bottom bottom",
           scrub: 1,
-          pin: ".journey-canvas",
-          anticipatePin: 1,
         },
       });
       timeline.to({}, { duration: 1 }, 0);
-      timeline.to(".signal-frontend", { autoAlpha: 1, duration: 0.2 }, 0.18);
-      timeline.to(".signal-backend", { autoAlpha: 1, duration: 0.2 }, 0.3);
-      timeline.to(".signal-data", { autoAlpha: 1, duration: 0.2 }, 0.42);
-      timeline.to(".signal-systems", { autoAlpha: 1, duration: 0.2 }, 0.54);
+      timeline.to(".signal-frontend", { autoAlpha: 1, duration: 0.1 }, 0.12);
+      timeline.to(".signal-backend", { autoAlpha: 1, duration: 0.1 }, 0.2);
+      timeline.to(".signal-data", { autoAlpha: 1, duration: 0.1 }, 0.28);
+      timeline.to(".signal-systems", { autoAlpha: 1, duration: 0.1 }, 0.36);
+      timeline.to(".skill-signal", { autoAlpha: 0, duration: 0.1 }, 0.58);
       gsap.to(".skill-signal", {
         y: (index) => (index % 2 === 0 ? -10 : 10),
         duration: 1.8,
@@ -115,15 +91,8 @@ export default function SpacePortfolio() {
         yoyo: true,
         stagger: 0.18,
       });
-      let wasLanding = false;
       timeline.eventCallback("onUpdate", () => {
-        const progress = timeline.progress();
-        sceneProgress.current = progress;
-        const nextLanding = progress >= 0.72;
-        if (nextLanding !== wasLanding) {
-          wasLanding = nextLanding;
-          setLanding(nextLanding);
-        }
+        sceneProgress.current = timeline.progress();
       });
       return () => {
         lenis.destroy();
@@ -142,6 +111,7 @@ export default function SpacePortfolio() {
           {" // expedition"}
         </Link>
         <nav className="nav-links" aria-label="Portfolio navigation">
+          <Link href="#work">Work</Link>
           <Link href="#about">About</Link>
           <a
             href="https://github.com/enriquemartinez-emc"
@@ -154,17 +124,14 @@ export default function SpacePortfolio() {
             className="nav-signal"
             href="mailto:enrique.martinez.swe@outlook.com"
           >
-            Send signal
+            Contact
           </a>
         </nav>
       </header>
-      <section className="journey" aria-label="Enrique's software expedition">
+      <section className="journey" aria-label="Enrique's software portfolio">
         <div className="journey-canvas">
           <GameScene progressRef={sceneProgress} />
-          <div
-            className={`skill-signals${landing ? " is-landing" : ""}`}
-            aria-hidden="true"
-          >
+          <div className="skill-signals" aria-hidden="true">
             <span className="skill-signal signal-frontend">Frontend</span>
             <span className="skill-signal signal-backend">Backend</span>
             <span className="skill-signal signal-data">Data</span>
@@ -172,30 +139,47 @@ export default function SpacePortfolio() {
           </div>
         </div>
         <div className="journey-content">
-          <section
-            id="launch"
-            className={`story-beat landing${landing ? " is-landing" : ""}`}
-          >
+          <section id="launch" className="story-beat landing">
             <div className="landing-copy">
-              <p className="eyebrow">01 / Landing sequence complete</p>
+              <p className="eyebrow">Full-stack developer</p>
               <h1>
                 Enrique
                 <br />
                 <span>Martinez</span>
               </h1>
               <p>
-                Full-stack developer building useful, durable software from
-                first signal to production.
+                I build useful, durable software across the stack: .NET and C#
+                backends, React and Next.js frontends, PostgreSQL, and Azure.
               </p>
-              <a className="story-link" href="#about">
-                Begin the walk ↓
-              </a>
+              <div className="hero-actions">
+                <a className="story-link" href="#work">
+                  View work ↓
+                </a>
+                <a
+                  className="story-link"
+                  href="https://github.com/enriquemartinez-emc"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  GitHub →
+                </a>
+                <a
+                  className="story-link"
+                  href="mailto:enrique.martinez.swe@outlook.com"
+                >
+                  Contact →
+                </a>
+              </div>
             </div>
           </section>
-          <section id="about" className="story-beat right">
+          <section
+            id="about"
+            className="story-beat right"
+            aria-labelledby="about-title"
+          >
             <div>
-              <p className="eyebrow">02 / The walk begins</p>
-              <h2>Make the complex feel navigable.</h2>
+              <p className="eyebrow">About</p>
+              <h2 id="about-title">Clear architecture, practical delivery.</h2>
               <p>
                 I build thoughtful web applications across frontend and backend
                 systems. The work is equal parts clear architecture, practical
@@ -203,23 +187,32 @@ export default function SpacePortfolio() {
               </p>
             </div>
           </section>
-          <section id="skills" className="story-beat">
+          <section
+            id="skills"
+            className="story-beat"
+            aria-labelledby="skills-title"
+          >
             <div>
-              <p className="eyebrow">03 / Discoveries logged</p>
-              <h2>A trail of working knowledge.</h2>
-              <div className="skill-list">
+              <p className="eyebrow">Skills</p>
+              <h2 id="skills-title">What I work with.</h2>
+              <ul className="skill-list">
                 {skillGroups.map(([label, technologies]) => (
-                  <span key={label}>
-                    {label} / {technologies}
-                  </span>
+                  <li key={label}>
+                    <strong>{label}</strong> / {technologies}
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
           </section>
-          <section id="contact" className="story-beat right">
+          <WorkSection repos={repos} />
+          <section
+            id="contact"
+            className="story-beat right"
+            aria-labelledby="contact-title"
+          >
             <div>
-              <p className="eyebrow">04 / Comms waypoint</p>
-              <h2>Open channel.</h2>
+              <p className="eyebrow">Contact</p>
+              <h2 id="contact-title">Let&apos;s talk.</h2>
               <p>For a new build, a hard problem, or a useful conversation:</p>
               <a
                 className="contact-email story-link"
@@ -229,50 +222,22 @@ export default function SpacePortfolio() {
               </a>
             </div>
           </section>
-          <section id="arrival" className="story-beat right">
-            <div>
-              <p className="eyebrow">05 / Planetfall</p>
-              <h2>Past the horizon.</h2>
-              <p>
-                The flight settles into its final state: a place for clear
-                systems, useful software, and the next problem worth solving.
-              </p>
-              <a
-                className="story-link"
-                href="https://github.com/enriquemartinez-emc"
-                target="_blank"
-                rel="noreferrer"
-              >
-                View GitHub →
-              </a>
-            </div>
-          </section>
-          <section className="story-beat end-beat">
-            <div>
-              <p className="eyebrow">06 / Expedition complete</p>
-              <h2>Keep exploring.</h2>
-              <p>{joke}</p>
-              <a className="story-link" href="#launch">
-                Return to launch ↑
-              </a>
-            </div>
-          </section>
         </div>
-        {!hasStartedJourney || atJourneyEnd ? (
+        {!hasStartedJourney ? (
           <a
             className="scroll-cue"
-            href={scrollCue.href}
-            aria-label={scrollCue.ariaLabel}
+            href="#about"
+            aria-label="Scroll to explore the portfolio"
           >
-            <span className="scroll-cue-label">{scrollCue.label}</span>
+            <span className="scroll-cue-label">Scroll to explore</span>
             <span className="scroll-cue-arrow" aria-hidden="true">
-              {scrollCue.arrow}
+              ↓
             </span>
           </a>
         ) : null}
       </section>
       <footer className="site-footer">
-        © {year} Enrique Martinez. Built for the long walk.
+        © {year} Enrique Martinez. {joke}
       </footer>
     </main>
   );

@@ -63,7 +63,7 @@ function PlanetClouds() {
 
 export function Planet({ progressRef }: SceneProps) {
   const planet = useRef<THREE.Group>(null);
-  const rings = useRef<THREE.Group>(null);
+  const moonOrbit = useRef<THREE.Group>(null);
   const atmosphere = useMemo(
     () =>
       new THREE.ShaderMaterial({
@@ -86,10 +86,7 @@ export function Planet({ progressRef }: SceneProps) {
     planet.current.position.y = THREE.MathUtils.lerp(-3.6, -1.6, progress);
     planet.current.scale.setScalar(THREE.MathUtils.lerp(0.65, 1.8, progress));
     planet.current.rotation.y = elapsed * 0.024;
-    if (rings.current) {
-      rings.current.rotation.z = -0.18 + Math.sin(elapsed * 0.08) * 0.025;
-      rings.current.rotation.y = elapsed * 0.012;
-    }
+    if (moonOrbit.current) moonOrbit.current.rotation.y = elapsed * 0.05;
   });
 
   return (
@@ -100,31 +97,14 @@ export function Planet({ progressRef }: SceneProps) {
         <sphereGeometry args={[8, 64, 48]} />
         <primitive object={atmosphere} attach="material" />
       </mesh>
-      <group ref={rings} rotation={[0.56, 0.18, -0.18]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[10.4, 0.22, 12, 128]} />
+      <group ref={moonOrbit} rotation={[0.3, 0, 0.12]}>
+        <mesh position={[18, 2.5, 0]}>
+          <sphereGeometry args={[1.6, 32, 24]} />
           <meshStandardMaterial
-            color="#d16a9d"
-            emissive="#6d285e"
-            emissiveIntensity={1.4}
-            roughness={0.45}
-            metalness={0.35}
-            transparent
-            opacity={0.76}
+            color="#9b97b3"
+            emissive="#2a2840"
+            roughness={1}
           />
-        </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[11.35, 0.08, 8, 128]} />
-          <meshBasicMaterial
-            color="#66d4e9"
-            transparent
-            opacity={0.7}
-            blending={THREE.AdditiveBlending}
-          />
-        </mesh>
-        <mesh rotation={[Math.PI / 2, 0, 0]}>
-          <torusGeometry args={[12.05, 0.04, 8, 128]} />
-          <meshBasicMaterial color="#ffc166" transparent opacity={0.58} />
         </mesh>
       </group>
       <pointLight

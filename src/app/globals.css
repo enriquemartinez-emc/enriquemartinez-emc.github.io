@@ -128,8 +128,8 @@ a {
   background:
     radial-gradient(
       circle at 82% 96%,
-      rgba(209, 106, 157, 0.55) 0 7%,
-      rgba(109, 40, 94, 0.4) 13%,
+      rgba(72, 178, 176, 0.5) 0 7%,
+      rgba(34, 94, 112, 0.4) 13%,
       transparent 32%
     ),
     url("/stars.svg"), linear-gradient(#020711, #07111d);

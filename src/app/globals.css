@@ -26,6 +26,25 @@ body {
 a {
   color: inherit;
 }
+.skip-link {
+  position: fixed;
+  z-index: 40;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.4rem;
+  background: var(--void);
+  color: var(--cyan);
+  font-size: 0.875rem;
+  transform: translateY(-200%);
+}
+.skip-link:focus-visible {
+  transform: none;
+}
+[data-paused="true"] *,
+[data-paused="true"] *::before {
+  animation-play-state: paused !important;
+}
 
 .space-site {
   overflow: clip;
@@ -44,13 +63,13 @@ a {
 }
 .wordmark {
   color: var(--ink);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   letter-spacing: 0.14em;
   text-decoration: none;
   text-transform: uppercase;
 }
-.wordmark span {
+.wordmark span:first-child {
   color: var(--cyan);
 }
 .nav-links {
@@ -60,7 +79,7 @@ a {
 }
 .nav-links a {
   color: var(--muted);
-  font-size: 0.69rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.1em;
   text-decoration: none;
   text-transform: uppercase;
@@ -68,6 +87,22 @@ a {
 }
 .nav-links a:hover,
 .nav-links a:focus-visible {
+  color: var(--cyan);
+}
+.motion-toggle {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8125rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.motion-toggle:hover,
+.motion-toggle:focus-visible {
   color: var(--cyan);
 }
 .nav-links .nav-signal {
@@ -85,7 +120,35 @@ a {
   top: 0;
   height: 100vh;
   overflow: hidden;
-  background: linear-gradient(#020711, #07111d);
+  background:
+    radial-gradient(
+      circle at 82% 96%,
+      rgba(209, 106, 157, 0.55) 0 7%,
+      rgba(109, 40, 94, 0.4) 13%,
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at 20% 35%,
+      rgba(115, 229, 235, 0.35) 0 1px,
+      transparent 1.7px
+    ),
+    radial-gradient(
+      circle at 74% 66%,
+      rgba(231, 237, 242, 0.45) 0 1px,
+      transparent 1.8px
+    ),
+    radial-gradient(
+      circle at 44% 18%,
+      rgba(115, 229, 235, 0.25) 0 1px,
+      transparent 1.6px
+    ),
+    linear-gradient(#020711, #07111d);
+  background-size:
+    100% 100%,
+    127px 113px,
+    191px 167px,
+    223px 149px,
+    100% 100%;
 }
 .game-scene,
 .skill-signals {
@@ -118,8 +181,8 @@ a {
     top 0.55s ease;
 }
 .signal-frontend {
-  left: 22%;
-  top: 29%;
+  left: 38%;
+  top: 22%;
   color: #5deaf1;
 }
 .signal-backend {
@@ -128,8 +191,8 @@ a {
   color: #b69bff;
 }
 .signal-data {
-  left: 37%;
-  top: 55%;
+  left: 50%;
+  top: 68%;
   color: #ffbd70;
 }
 .signal-systems {
@@ -195,7 +258,7 @@ a {
   margin: 0 0 1rem;
   color: var(--cyan);
   font-family: var(--font-oxanium);
-  font-size: 0.67rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
 }
@@ -247,7 +310,7 @@ a {
   box-shadow: none;
   color: var(--cyan);
   font-family: var(--font-oxanium);
-  font-size: 0.65rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.14em;
   pointer-events: auto;
   text-decoration: none;
@@ -267,7 +330,7 @@ a {
   margin-top: 1.5rem;
   color: var(--cyan);
   font-family: var(--font-oxanium);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   letter-spacing: 0.08em;
   pointer-events: auto;
   text-decoration-color: rgba(115, 229, 235, 0.4);
@@ -284,7 +347,7 @@ a {
   border-left: 2px solid var(--cyan);
   color: var(--ink);
   font-family: var(--font-oxanium);
-  font-size: 0.85rem;
+  font-size: 1rem;
   letter-spacing: 0.04em;
   padding-left: 0.75rem;
 }
@@ -295,6 +358,10 @@ a {
 }
 .work-beat > div {
   max-width: 64rem;
+  padding: 2rem;
+  border-radius: 0.75rem;
+  background: rgba(2, 7, 17, 0.58);
+  backdrop-filter: blur(5px);
 }
 .work-grid {
   display: grid;
@@ -329,13 +396,13 @@ a {
 }
 .story-beat .work-card p.work-meta {
   color: var(--cyan);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
 }
 .contact-email {
   color: var(--amber);
   font-family: var(--font-oxanium);
-  font-size: clamp(0.85rem, 1.6vw, 1.15rem);
+  font-size: clamp(1rem, 1.6vw, 1.15rem);
   word-break: break-word;
 }
 .site-footer {
@@ -344,7 +411,7 @@ a {
   padding: 1.5rem;
   color: var(--muted);
   font-family: var(--font-oxanium);
-  font-size: 0.66rem;
+  font-size: 0.8125rem;
   letter-spacing: 0.06em;
   text-align: center;
 }
@@ -373,6 +440,11 @@ a {
     opacity: 0.4;
   }
 }
+@media (max-width: 479px) {
+  .wordmark-tail {
+    display: none;
+  }
+}
 @media (max-width: 767px), (prefers-reduced-motion: reduce) {
   .journey-canvas {
     position: absolute;
@@ -392,7 +464,8 @@ a {
     justify-content: flex-start;
     text-align: left;
   }
-  .story-beat > div {
+  .story-beat > div,
+  .work-beat > div {
     padding: 1.25rem;
     background: rgba(7, 17, 29, 0.72);
     border-left: 1px solid rgba(115, 229, 235, 0.35);

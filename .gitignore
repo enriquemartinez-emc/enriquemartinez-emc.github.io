@@ -47,3 +47,8 @@ next-env.d.ts
 /skills/
 /skills-lock.json
 /AGENTS.md
+
+# tests
+/test-results/
+/playwright-report/
+/.lighthouseci/

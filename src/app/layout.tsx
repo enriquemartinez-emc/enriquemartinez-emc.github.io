@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Orbitron, Oxanium } from "next/font/google";
 import Script from "next/script";
+import { profile } from "@/data/site";
 import "./globals.css";
 
 const geist = Geist({
@@ -19,10 +20,37 @@ const orbitron = Orbitron({
   display: "swap",
 });
 
+const siteUrl = "https://enriquemartinez-emc.github.io";
+const title = `${profile.name} | Full-stack developer`;
+const description =
+  "Full-stack developer building .NET, React and PostgreSQL software. Public projects, skills and contact details.";
+
 export const metadata: Metadata = {
-  title: "Enrique Martinez | Full-stack developer",
-  description: "A scroll journey through Enrique Martinez's software work.",
+  metadataBase: new URL(siteUrl),
+  title,
+  description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: profile.name,
+    title,
+    description,
+    locale: "en_US",
+  },
+  twitter: { card: "summary_large_image", title, description },
 };
+
+const personJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: profile.name,
+  jobTitle: "Full-stack developer",
+  url: siteUrl,
+  email: `mailto:${profile.email}`,
+  sameAs: [profile.githubUrl],
+  knowsAbout: [".NET", "C#", "React", "Next.js", "PostgreSQL", "Azure"],
+}).replace(/</g, "\\u003c");
 
 export default function RootLayout({
   children,
@@ -36,6 +64,10 @@ export default function RootLayout({
           src="https://cloud.umami.is/script.js"
           data-website-id="aedd3fdc-c7cd-4840-87f0-b89c1fed95ea"
           strategy="afterInteractive"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: personJsonLd }}
         />
         {children}
       </body>

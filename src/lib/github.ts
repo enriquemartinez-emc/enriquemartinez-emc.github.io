@@ -40,7 +40,13 @@ export async function getFeaturedRepos(): Promise<Repo[]> {
     const response = await fetch(
       `https://api.github.com/users/${GITHUB_USER}/repos?per_page=100&sort=pushed`,
       {
-        headers: { Accept: "application/vnd.github+json" },
+        headers: {
+          Accept: "application/vnd.github+json",
+          // Shared CI runner IPs hit the anonymous rate limit; a token avoids it.
+          ...(process.env.GITHUB_TOKEN && {
+            Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          }),
+        },
         // Next's fetch cache survives builds (and the CI cache), which would
         // publish a stale repo list. "no-store" would make the page dynamic,
         // so use a window short enough that every build refetches.

@@ -62,3 +62,36 @@ test.describe("reduced motion", () => {
     await expect(page.locator("canvas")).toHaveCount(0);
   });
 });
+
+test.describe("theme", () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test("defaults to the dark theme", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  });
+
+  test.describe("system prefers light", () => {
+    test.use({ colorScheme: "light" });
+
+    test("starts light and does not mount the 3D scene", async ({ page }) => {
+      await page.goto("/");
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+      await expect(
+        page.getByRole("heading", { level: 1, name: /Enrique\s*Martinez/ }),
+      ).toBeInViewport();
+      await expect(page.locator("canvas")).toHaveCount(0);
+    });
+
+    test("toggle switches theme and remembers the choice", async ({ page }) => {
+      await page.goto("/");
+      await page.getByRole("button", { name: "Switch to dark theme" }).click();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await page.reload();
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+      await expect(
+        page.getByRole("button", { name: "Switch to light theme" }),
+      ).toBeVisible();
+    });
+  });
+});

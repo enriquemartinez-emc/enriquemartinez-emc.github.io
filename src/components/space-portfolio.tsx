@@ -7,10 +7,12 @@ import Lenis from "lenis";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import ThemeToggle from "@/components/theme-toggle";
 import WorkSection from "@/components/work-section";
 import { jokes, profile, skillGroups } from "@/data/site";
 import { MOTION_QUERY, useSceneEnabled } from "@/hooks/use-scene-enabled";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { useTheme } from "@/hooks/use-theme";
 import type { Repo } from "@/lib/github";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -29,7 +31,9 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
   const floatTween = useRef<gsap.core.Tween | null>(null);
   const [hasStartedJourney, setHasStartedJourney] = useState(false);
   const [paused, setPaused] = useState(false);
-  const sceneEnabled = useSceneEnabled();
+  const theme = useTheme();
+  // The flight scene is dark-theme only, so light visitors never download it.
+  const sceneEnabled = useSceneEnabled() && theme === "dark";
   const motionEnabled = useMediaQuery(MOTION_QUERY);
   const year = useSyncExternalStore(
     subscribeToYear,
@@ -125,6 +129,7 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
           >
             {paused ? "Play motion" : "Pause motion"}
           </button>
+          <ThemeToggle />
           <a className="nav-signal" href={`mailto:${profile.email}`}>
             Contact
           </a>
@@ -159,8 +164,8 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
               </h1>
               <p>
                 I build useful, durable software across the stack: .NET and C#
-                backends, React and Next.js frontends, Vue and Nuxt
-                frontends,PostgreSQL, and Azure.
+                backends, React and Next.js frontends, Vue and Nuxt frontends,
+                PostgreSQL, and Azure.
               </p>
               <div className="hero-actions">
                 <a className="story-link" href="#work">

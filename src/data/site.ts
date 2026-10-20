@@ -19,7 +19,7 @@ export const skillGroups = [
 ];
 
 /** Repos always shown first in the Work section, in this order. */
-export const pinnedRepos = ["vitrum"];
+export const pinnedRepos = ["DevDesk", "vitrum"];
 
 /** Public repos that should not appear in the Work section. */
-export const hiddenRepos = ["window-shop"];
+export const hiddenRepos = ["window-shop", "habits-tracker-app"];

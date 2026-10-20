@@ -31,6 +31,7 @@ describe("getFeaturedRepos", () => {
       repo({ name: "enriquemartinez-emc" }),
       repo({ name: "enriquemartinez-emc.github.io" }),
       repo({ name: "window-shop" }),
+      repo({ name: "habits-tracker-app" }),
     ]);
 
     const repos = await getFeaturedRepos();
@@ -38,16 +39,18 @@ describe("getFeaturedRepos", () => {
     expect(repos.map((item) => item.name)).toEqual(["keep"]);
   });
 
-  it("puts pinned repos first and keeps the rest in API order", async () => {
+  it("puts pinned repos first, in pinned order, and keeps the rest in API order", async () => {
     mockFetch([
       repo({ name: "recent" }),
-      repo({ name: "older" }),
       repo({ name: "vitrum" }),
+      repo({ name: "older" }),
+      repo({ name: "DevDesk" }),
     ]);
 
     const repos = await getFeaturedRepos();
 
     expect(repos.map((item) => item.name)).toEqual([
+      "DevDesk",
       "vitrum",
       "recent",
       "older",

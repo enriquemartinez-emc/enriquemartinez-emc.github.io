@@ -51,24 +51,29 @@ export const planetFragmentShader = /* glsl */ `
   }
 
   void main() {
-    vec3 point = vPosition * 3.4;
-    float drift = uTime * 0.025;
-    float turbulence = fbm(point * 1.7 + vec3(drift, -drift * 0.45, drift * 0.2));
-    float fineTurbulence = fbm(point * 5.2 - vec3(drift * 1.5, 0.0, drift));
-    float bands = sin((vPosition.y + turbulence * 0.16) * 24.0);
-    float bandMask = smoothstep(-0.72, 0.72, bands);
+    vec3 point = vPosition * 2.6;
+    float drift = uTime * 0.008;
+    float continents = fbm(point + vec3(drift, 0.0, -drift));
+    float detail = fbm(point * 4.2 + vec3(3.7, 1.3, 5.9));
+    float elevation = continents * 0.8 + detail * 0.2;
 
-    vec3 deep = vec3(0.055, 0.035, 0.16);
-    vec3 violet = vec3(0.28, 0.10, 0.42);
-    vec3 copper = vec3(0.72, 0.23, 0.20);
-    vec3 highlight = vec3(1.0, 0.49, 0.23);
-    vec3 color = mix(deep, violet, bandMask);
-    color = mix(color, copper, smoothstep(0.42, 0.78, turbulence) * 0.72);
-    color += highlight * smoothstep(0.7, 1.0, fineTurbulence) * 0.2;
+    float seaLevel = 0.47;
+    vec3 deepSea = vec3(0.02, 0.10, 0.17);
+    vec3 shallows = vec3(0.05, 0.38, 0.42);
+    vec3 sand = vec3(0.80, 0.52, 0.30);
+    vec3 rust = vec3(0.50, 0.20, 0.17);
+    vec3 peaks = vec3(0.72, 0.62, 0.82);
 
-    float storm = smoothstep(0.76, 0.96, fbm(point * 2.8 + vec3(1.0, 4.0, -2.0)));
-    float stormShape = smoothstep(0.25, 0.85, 1.0 - abs(vPosition.x * 0.75 + vPosition.y * 0.35));
-    color += vec3(0.92, 0.19, 0.36) * storm * stormShape * 0.42;
+    vec3 sea = mix(deepSea, shallows, smoothstep(seaLevel - 0.14, seaLevel, elevation));
+    vec3 land = mix(sand, rust, smoothstep(seaLevel, seaLevel + 0.22, elevation));
+    land = mix(land, peaks, smoothstep(seaLevel + 0.2, seaLevel + 0.32, elevation));
+    vec3 color = mix(sea, land, step(seaLevel, elevation));
+
+    float shore = smoothstep(0.035, 0.0, abs(elevation - seaLevel));
+    color += vec3(0.25, 0.9, 0.85) * shore * 0.35;
+
+    float cap = smoothstep(0.8, 0.93, abs(vPosition.y) + (detail - 0.5) * 0.14);
+    color = mix(color, vec3(0.86, 0.92, 0.96), cap);
 
     float light = 0.42 + 0.58 * max(dot(vNormal, normalize(vec3(-0.55, 0.65, 0.75))), 0.0);
     gl_FragColor = vec4(color * light, 1.0);
@@ -102,7 +107,7 @@ export const cloudFragmentShader = /* glsl */ `
     vec3 point = vPosition * 6.0 + vec3(uTime * 0.035, -uTime * 0.012, 0.0);
     float clouds = noise(point) * 0.62 + noise(point * 2.1) * 0.38;
     float density = smoothstep(0.54, 0.72, clouds);
-    gl_FragColor = vec4(vec3(0.86, 0.42, 0.62), density * 0.22);
+    gl_FragColor = vec4(vec3(0.92, 0.96, 1.0), density * 0.22);
   }
 `;
 

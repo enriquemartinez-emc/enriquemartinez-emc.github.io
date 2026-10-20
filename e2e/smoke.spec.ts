@@ -74,13 +74,27 @@ test.describe("theme", () => {
   test.describe("system prefers light", () => {
     test.use({ colorScheme: "light" });
 
-    test("starts light and does not mount the 3D scene", async ({ page }) => {
+    test("starts light and mounts the astronaut scene", async ({ page }) => {
       await page.goto("/");
       await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
       await expect(
         page.getByRole("heading", { level: 1, name: /Enrique\s*Martinez/ }),
       ).toBeInViewport();
-      await expect(page.locator("canvas")).toHaveCount(0);
+      await expect(page.locator("canvas")).toHaveCount(1);
+    });
+
+    test.describe("with reduced motion", () => {
+      test.use({ reducedMotion: "reduce" });
+
+      test("shows the dune poster instead of the 3D scene", async ({
+        page,
+      }) => {
+        await page.goto("/");
+        await expect(
+          page.getByRole("heading", { level: 1, name: /Enrique\s*Martinez/ }),
+        ).toBeVisible();
+        await expect(page.locator("canvas")).toHaveCount(0);
+      });
     });
 
     test("toggle switches theme and remembers the choice", async ({ page }) => {

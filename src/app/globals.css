@@ -53,6 +53,21 @@
   --poster-size: 100% 38%, 100% 100%, 100% 100%, 100% 100%;
   --poster-position: center bottom, 0 0, 0 0, 0 0;
   --poster-repeat: no-repeat;
+  /* Sky only: the 3D scene draws its own ground once it is running. */
+  --poster-sky:
+    radial-gradient(
+      circle at 76% 24%,
+      rgba(255, 247, 214, 0.95) 0 4%,
+      rgba(255, 214, 150, 0.55) 9%,
+      transparent 26%
+    ),
+    linear-gradient(#b9dff0, #f6e7d0 62%, #f3c995);
+  --poster-sky-size: 100% 100%, 100% 100%;
+}
+:root[data-theme="light"] .journey[data-scene="on"] .journey-canvas {
+  background-image: var(--poster-sky);
+  background-size: var(--poster-sky-size);
+  background-position: 0 0;
 }
 * {
   box-sizing: border-box;
@@ -252,6 +267,18 @@ a {
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   background: color-mix(in srgb, var(--void) 92%, transparent);
+}
+/* Cream backing so hero text stays readable over the 3D terrain. */
+:root[data-theme="light"] .journey[data-scene="on"] .landing::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    rgba(251, 238, 217, 0.94),
+    rgba(251, 238, 217, 0.82) 36%,
+    rgba(251, 238, 217, 0) 62%
+  );
 }
 .journey-content {
   position: relative;

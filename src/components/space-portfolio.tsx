@@ -12,13 +12,16 @@ import WorkSection from "@/components/work-section";
 import { jokes, profile, skillGroups } from "@/data/site";
 import { MOTION_QUERY, useSceneEnabled } from "@/hooks/use-scene-enabled";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useTheme } from "@/hooks/use-theme";
+import { useTheme, type Theme } from "@/hooks/use-theme";
 import type { Repo } from "@/lib/github";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 // three.js and friends only download when the scene is actually mounted.
 const GameScene = dynamic(() => import("@/scene/game-scene"), { ssr: false });
+const LightScene = dynamic(() => import("@/scene/light/light-scene"), {
+  ssr: false,
+});
 
 const subscribeToYear = () => () => {};
 const getCurrentYear = () => new Date().getFullYear();
@@ -32,8 +35,10 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
   const [hasStartedJourney, setHasStartedJourney] = useState(false);
   const [paused, setPaused] = useState(false);
   const theme = useTheme();
-  // The flight scene is dark-theme only, so light visitors never download it.
-  const sceneEnabled = useSceneEnabled() && theme === "dark";
+  // Each theme has its own scene, loaded only when that theme is active.
+  const motionScene = useSceneEnabled();
+  const [readyFor, setReadyFor] = useState<Theme | null>(null);
+  const sceneReady = motionScene && readyFor === theme;
   const motionEnabled = useMediaQuery(MOTION_QUERY);
   const year = useSyncExternalStore(
     subscribeToYear,
@@ -135,11 +140,26 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
           </a>
         </nav>
       </header>
-      <section className="journey" aria-label="Enrique's software portfolio">
+      <section
+        className="journey"
+        aria-label="Enrique's software portfolio"
+        data-scene={sceneReady ? "on" : "off"}
+      >
         <div className="journey-canvas">
           <div className="game-scene" aria-hidden="true">
-            {sceneEnabled ? (
-              <GameScene progressRef={sceneProgress} paused={paused} />
+            {motionScene && theme === "dark" ? (
+              <GameScene
+                progressRef={sceneProgress}
+                paused={paused}
+                onReady={() => setReadyFor("dark")}
+              />
+            ) : null}
+            {motionScene && theme === "light" ? (
+              <LightScene
+                progressRef={sceneProgress}
+                paused={paused}
+                onReady={() => setReadyFor("light")}
+              />
             ) : null}
           </div>
           <div className="skill-signals" aria-hidden="true">

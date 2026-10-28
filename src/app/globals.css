@@ -1,33 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark;
-  --void: #07111d;
-  --ink: #e7edf2;
-  --muted: #9eacb9;
-  --accent: #73e5eb;
+  color-scheme: light;
   --accent-line: color-mix(in srgb, var(--accent) 50%, transparent);
   --accent-soft: color-mix(in srgb, var(--accent) 40%, transparent);
-  --glass: rgba(7, 17, 29, 0.58);
-  --glass-border: rgba(231, 237, 242, 0.1);
-  --nav-bg: rgba(2, 7, 17, 0.72);
-  --card-bg: rgba(2, 7, 17, 0.55);
-  --poster:
-    radial-gradient(
-      circle at 82% 96%,
-      rgba(72, 178, 176, 0.5) 0 7%,
-      rgba(34, 94, 112, 0.4) 13%,
-      transparent 32%
-    ),
-    url("/stars.svg"), linear-gradient(#020711, #07111d);
-  --poster-size: 100% 100%, 720px 720px, 100% 100%;
-  --poster-position: 0 0;
-  --poster-repeat: repeat;
   --font-oxanium: "Oxanium", Arial, Helvetica, sans-serif;
   --font-orbitron: "Orbitron", Arial, Helvetica, sans-serif;
-}
-:root[data-theme="light"] {
-  color-scheme: light;
   --void: #fbeed9;
   --ink: #14213d;
   --muted: #475467;
@@ -64,7 +42,29 @@
     linear-gradient(#b9dff0, #f6e7d0 62%, #f3c995);
   --poster-sky-size: 100% 100%, 100% 100%;
 }
-:root[data-theme="light"] .journey[data-scene="on"] .journey-canvas {
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --void: #07111d;
+  --ink: #e7edf2;
+  --muted: #9eacb9;
+  --accent: #73e5eb;
+  --glass: rgba(7, 17, 29, 0.58);
+  --glass-border: rgba(231, 237, 242, 0.1);
+  --nav-bg: rgba(2, 7, 17, 0.72);
+  --card-bg: rgba(2, 7, 17, 0.55);
+  --poster:
+    radial-gradient(
+      circle at 82% 96%,
+      rgba(72, 178, 176, 0.5) 0 7%,
+      rgba(34, 94, 112, 0.4) 13%,
+      transparent 32%
+    ),
+    url("/stars.svg"), linear-gradient(#020711, #07111d);
+  --poster-size: 100% 100%, 720px 720px, 100% 100%;
+  --poster-position: 0 0;
+  --poster-repeat: repeat;
+}
+:root:not([data-theme="dark"]) .journey[data-scene="on"] .journey-canvas {
   background-image: var(--poster-sky);
   background-size: var(--poster-sky-size);
   background-position: 0 0;
@@ -259,17 +259,17 @@ a {
   color: #f78cac;
 }
 /* Light theme: the dark flight scene is not mounted, only the daylight poster. */
-:root[data-theme="light"] .skill-signals {
+:root:not([data-theme="dark"]) .skill-signals {
   display: none;
 }
-:root[data-theme="light"] .scroll-cue {
+:root:not([data-theme="dark"]) .scroll-cue {
   padding: 0.5rem 1rem;
   border: 1px solid var(--glass-border);
   border-radius: 999px;
   background: color-mix(in srgb, var(--void) 92%, transparent);
 }
 /* Cream backing so hero text stays readable over the 3D terrain. */
-:root[data-theme="light"] .journey[data-scene="on"] .landing::before {
+:root:not([data-theme="dark"]) .journey[data-scene="on"] .landing::before {
   position: absolute;
   inset: 0;
   content: "";

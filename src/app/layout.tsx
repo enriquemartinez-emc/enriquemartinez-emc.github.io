@@ -41,14 +41,11 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title, description },
 };
 
-// Runs before first paint so the saved or system theme never flashes.
-const themeScript = `(function(){var t;try{var s=localStorage.getItem("theme");t=s==="light"||s==="dark"?s:null}catch(e){}if(!t){t=matchMedia("(prefers-color-scheme: light)").matches?"light":"dark"}document.documentElement.dataset.theme=t})()`;
+// Runs before first paint so the saved theme (light by default) never flashes.
+const themeScript = `(function(){var t="light";try{if(localStorage.getItem("theme")==="dark")t="dark"}catch(e){}document.documentElement.dataset.theme=t})()`;
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#fbeed9" },
-    { media: "(prefers-color-scheme: dark)", color: "#07111d" },
-  ],
+  themeColor: "#fbeed9",
 };
 
 const personJsonLd = JSON.stringify({

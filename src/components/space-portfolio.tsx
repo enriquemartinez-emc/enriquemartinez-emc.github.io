@@ -185,7 +185,7 @@ export default function SpacePortfolio({ repos }: { repos: Repo[] }) {
               <p>
                 I build useful, durable software across the stack: .NET and C#
                 backends, React and Next.js frontends, Vue and Nuxt frontends,
-                PostgreSQL, and Azure.
+                PostgreSQL, SQL Server, and full stack development.
               </p>
               <div className="hero-actions">
                 <a className="story-link" href="#work">
